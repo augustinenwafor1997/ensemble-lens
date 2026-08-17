@@ -1,0 +1,5 @@
+# Ensemble Lens is a single self-contained page; nothing to build.
+raw_*/
+__pycache__/
+*.pyc
+.DS_Store

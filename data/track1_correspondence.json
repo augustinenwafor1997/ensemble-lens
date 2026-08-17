@@ -1,0 +1,72 @@
+{
+ "K": 3,
+ "short": [
+  "free",
+  "TMP",
+  "SPA"
+ ],
+ "spread": 5.658,
+ "meanNoiseFloor": 0.581,
+ "states": {
+  "0": {
+   "sameState": 1.597,
+   "diffState": 2.587,
+   "ratio": 1.62,
+   "real": true,
+   "tight": true,
+   "verdict": "real but small against the ensemble spread",
+   "rg": [
+    13.64,
+    12.83,
+    12.54
+   ],
+   "rgSpread": 1.1,
+   "beta": [
+    1.9,
+    0.9,
+    3.3
+   ],
+   "betaSpread": 2.4
+  },
+  "1": {
+   "sameState": 2.886,
+   "diffState": 3.358,
+   "ratio": 1.164,
+   "real": true,
+   "tight": false,
+   "verdict": "real and large",
+   "rg": [
+    15.6,
+    15.15,
+    12.71
+   ],
+   "rgSpread": 2.89,
+   "beta": [
+    7.2,
+    9.6,
+    0.6
+   ],
+   "betaSpread": 9.0
+  },
+  "2": {
+   "sameState": 1.775,
+   "diffState": 3.022,
+   "ratio": 1.703,
+   "real": true,
+   "tight": true,
+   "verdict": "real but small against the ensemble spread",
+   "rg": [
+    11.8,
+    12.8,
+    12.26
+   ],
+   "rgSpread": 1.0,
+   "beta": [
+    4.8,
+    4.3,
+    3.3
+   ],
+   "betaSpread": 1.5
+  }
+ }
+}

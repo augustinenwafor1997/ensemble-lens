@@ -1,0 +1,1610 @@
+<title>Ensemble Lens · Adaptive MD Comparison</title>
+<style>
+  /* ============================================================
+     Ensemble Lens: visual identity
+     A precision scientific instrument. Chrome is near-monochrome and
+     recedes (deference); only the DATA carries colour. Structure is
+     hairline rules and a strict grid, not floating cards. Typography
+     pairs a serif display face with monospace instrumentation.
+     ============================================================ */
+  :root {
+    --plane:#f6f7f8; --surface:#ffffff; --surface-2:#eff1f3;
+    --ink:#14171a; --ink-2:#4d545c; --muted:#838b94;
+    --grid:#eaecef; --baseline:#c3c9cf; --border:#e2e5e8; --rule:#cfd4d9;
+    --accent:#1a4f7a;
+    --s0:#2a78d6; --s1:#1baf7a; --s2:#eda100; --s3:#008300;
+    --div-pos:#2a78d6; --div-neg:#e34948; --div-mid:#eceef1;
+    --shadow:none;
+    --font-display:ui-serif,"New York","Iowan Old Style","Palatino Linotype",Georgia,serif;
+    --font-sans:system-ui,-apple-system,"Segoe UI",Roboto,"Helvetica Neue",sans-serif;
+    --font-mono:ui-monospace,"SF Mono","Cascadia Code",Menlo,Consolas,monospace;
+    --r:4px;
+  }
+  @media (prefers-color-scheme:dark){ :root{
+    --plane:#0a0b0d; --surface:#111316; --surface-2:#171a1e;
+    --ink:#eef0f2; --ink-2:#9aa2ab; --muted:#757e88;
+    --grid:#1e2227; --baseline:#333a41; --border:#23272c; --rule:#2e343a;
+    --accent:#6aa9e0;
+    --s0:#3987e5; --s1:#199e70; --s2:#c98500; --s3:#008300;
+    --div-pos:#3987e5; --div-neg:#e66767; --div-mid:#20242b;
+  }}
+  :root[data-theme="light"]{
+    --plane:#f6f7f8; --surface:#ffffff; --surface-2:#eff1f3;
+    --ink:#14171a; --ink-2:#4d545c; --muted:#838b94;
+    --grid:#eaecef; --baseline:#c3c9cf; --border:#e2e5e8; --rule:#cfd4d9;
+    --accent:#1a4f7a;
+    --s0:#2a78d6; --s1:#1baf7a; --s2:#eda100; --s3:#008300;
+    --div-pos:#2a78d6; --div-neg:#e34948; --div-mid:#eceef1;
+  }
+  :root[data-theme="dark"]{
+    --plane:#0a0b0d; --surface:#111316; --surface-2:#171a1e;
+    --ink:#eef0f2; --ink-2:#9aa2ab; --muted:#757e88;
+    --grid:#1e2227; --baseline:#333a41; --border:#23272c; --rule:#2e343a;
+    --accent:#6aa9e0;
+    --s0:#3987e5; --s1:#199e70; --s2:#c98500; --s3:#008300;
+    --div-pos:#3987e5; --div-neg:#e66767; --div-mid:#20242b;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--plane);color:var(--ink);font-family:var(--font-sans);
+    line-height:1.55;-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale;font-size:15px}
+  .wrap{max-width:1160px;margin:0 auto;padding:0 32px 120px}
+  a{color:var(--accent)}
+  ::selection{background:var(--ink);color:var(--surface)}
+
+  /* ---------- masthead ---------- */
+  header.top{padding:72px 0 0}
+  .eyebrow{display:none}
+  h1{font-family:var(--font-display);font-size:clamp(34px,5.2vw,56px);line-height:1.04;
+    letter-spacing:-.021em;margin:0 0 20px;font-weight:500;text-wrap:balance;max-width:17ch;
+    font-feature-settings:"kern" 1,"liga" 1}
+  .lede{font-size:17.5px;color:var(--ink-2);max-width:60ch;margin:0;line-height:1.6}
+  .lede b{color:var(--ink);font-weight:600}
+
+  /* ---------- headline data strip (hairline, not cards) ---------- */
+  .thesis{display:grid;grid-template-columns:repeat(3,1fr);margin:44px 0 0;
+    border-top:1px solid var(--rule);border-bottom:1px solid var(--border)}
+  .stat{padding:20px 26px 22px;border-left:1px solid var(--border)}
+  .stat:first-child{border-left:0;padding-left:0}
+  .stat .k{font-family:var(--font-mono);font-size:10.5px;color:var(--muted);letter-spacing:.13em;
+    text-transform:uppercase;margin:0 0 12px;display:flex;align-items:center;gap:7px;font-weight:500}
+  .stat .v{font-family:var(--font-display);font-size:34px;font-weight:500;letter-spacing:-.018em;
+    line-height:1;font-variant-numeric:tabular-nums;color:var(--ink)}
+  .stat .v small{font-family:var(--font-sans);font-size:13.5px;color:var(--muted);font-weight:400;
+    letter-spacing:0}
+  .stat .sub{font-size:12.5px;color:var(--ink-2);margin-top:11px;line-height:1.5;max-width:34ch}
+  .dot{width:9px;height:9px;border-radius:50%;display:inline-block;flex:none}
+
+  /* ---------- instrument bar ---------- */
+  .toolbar{position:sticky;top:0;z-index:20;background:var(--plane);
+    border-bottom:1px solid var(--rule);margin:0 -32px;padding:12px 32px;
+    display:flex;flex-wrap:wrap;align-items:center;gap:14px 30px}
+  .ctl{display:flex;align-items:center;gap:10px}
+  .ctl .lbl,.focusbar .lbl{font-family:var(--font-mono);font-size:10.5px;letter-spacing:.13em;
+    text-transform:uppercase;color:var(--muted);font-weight:500}
+  .seg{display:inline-flex;border:1px solid var(--border);border-radius:var(--r);
+    background:var(--surface);overflow:hidden}
+  .seg button{font:inherit;font-size:12.5px;font-weight:500;border:0;background:transparent;
+    color:var(--ink-2);padding:5px 13px;cursor:pointer;font-variant-numeric:tabular-nums;
+    border-left:1px solid var(--border);transition:color .12s,background .12s}
+  .seg button:first-child{border-left:0}
+  .seg button:hover{color:var(--ink);background:var(--surface-2)}
+  .seg button[aria-pressed="true"]{background:var(--ink);color:var(--surface)}
+  .seg button:focus-visible{outline:2px solid var(--accent);outline-offset:-2px}
+  .legend{display:flex;flex-wrap:wrap;gap:6px 16px;margin-left:auto}
+  .legend .item{display:flex;align-items:center;gap:7px;cursor:pointer;font-size:12.5px;
+    color:var(--ink-2);border:0;background:transparent;font-family:inherit;padding:2px 0;
+    font-variant-numeric:tabular-nums}
+  .legend .item:hover{color:var(--ink)}
+  .legend .item.mut{opacity:.35}
+
+  /* ---------- figures ---------- */
+  section.panel{margin-top:64px}
+  .phead{display:flex;align-items:baseline;justify-content:space-between;gap:20px;
+    padding-bottom:10px;border-bottom:1px solid var(--rule);margin-bottom:14px}
+  .phead h2{font-family:var(--font-display);font-size:23px;letter-spacing:-.012em;margin:0;
+    font-weight:500;color:var(--ink)}
+  .tag{font-family:var(--font-mono);font-size:10px;color:var(--muted);letter-spacing:.1em;
+    text-transform:uppercase;white-space:nowrap;font-weight:500}
+  .pdesc{font-size:14px;color:var(--ink-2);max-width:74ch;margin:0 0 20px;line-height:1.62}
+  .pdesc b{color:var(--ink);font-weight:600}
+  .cols{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}
+  figure.col{margin:0;background:var(--surface);border:1px solid var(--border);
+    border-radius:var(--r);padding:15px 15px 13px;min-width:0}
+  figure.col figcaption{display:flex;align-items:center;gap:8px;margin-bottom:12px;
+    padding-bottom:9px;border-bottom:1px solid var(--grid)}
+  figcaption .name{font-size:13px;font-weight:600;letter-spacing:-.005em}
+  figcaption .meta{font-family:var(--font-mono);font-size:10px;color:var(--muted);margin-left:auto;
+    font-variant-numeric:tabular-nums;letter-spacing:.04em;text-transform:uppercase}
+  .syschip{width:8px;height:8px;border-radius:50%;flex:none}
+  svg{display:block;width:100%;height:auto;overflow:visible}
+  canvas{display:block;width:100%;height:auto;border-radius:2px}
+  text{font-family:var(--font-mono)}
+
+  /* state highlight dimming */
+  [data-hl="0"] .st1,[data-hl="0"] .st2,[data-hl="0"] .st3,
+  [data-hl="1"] .st0,[data-hl="1"] .st2,[data-hl="1"] .st3,
+  [data-hl="2"] .st0,[data-hl="2"] .st1,[data-hl="2"] .st3,
+  [data-hl="3"] .st0,[data-hl="3"] .st1,[data-hl="3"] .st2{opacity:.12;transition:opacity .12s}
+
+  .axlab{fill:var(--muted);font-size:10px;letter-spacing:.02em}
+  /* Every quantitative axis is named, not just ticked. Titles are written already
+     capitalised rather than transformed, because uppercasing turns "β" into "Β",
+     which reads as a Latin B and silently corrupts the units. */
+  .axtitle{fill:var(--ink-2);font-size:9.5px;letter-spacing:.11em;font-weight:600}
+  .vlab{fill:var(--ink);font-size:10.5px;font-weight:600;font-variant-numeric:tabular-nums}
+  .grid{stroke:var(--grid);stroke-width:1}
+  .base{stroke:var(--baseline);stroke-width:1}
+
+  /* ---------- colour-scale key (every colour-encoded value gets numbers) ---------- */
+  .ckey{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin:0 0 14px}
+  .ckey .ct{font-family:var(--font-mono);font-size:10px;letter-spacing:.11em;
+    text-transform:uppercase;color:var(--muted);font-weight:500}
+  .ckey .cramp{display:flex;flex-direction:column;gap:3px}
+  .ckey .cbarv{height:9px;border:1px solid var(--border);border-radius:2px}
+  .ckey .cticks{display:flex;justify-content:space-between;font-family:var(--font-mono);
+    font-size:10px;color:var(--ink-2);font-variant-numeric:tabular-nums}
+  .ckey .cticks span{white-space:nowrap}
+  .ckey .citem{display:flex;align-items:center;gap:6px;font-size:11.5px;color:var(--ink-2);
+    font-variant-numeric:tabular-nums}
+  .ckey .cswatch{width:15px;height:9px;border-radius:2px;display:inline-block;flex:none}
+  .ckey .cline{width:16px;height:0;border-top-width:2px;border-top-style:solid;display:inline-block;flex:none}
+  .axnote{font-family:var(--font-mono);font-size:10px;color:var(--muted);margin-top:6px;
+    letter-spacing:.03em;text-align:center}
+  /* canvas plots carry their y-axis title in the DOM, rotated alongside the plot */
+  .cvwrap{display:flex;align-items:stretch;gap:4px}
+  .cvwrap .ytitle{writing-mode:vertical-rl;transform:rotate(180deg);font-family:var(--font-mono);
+    font-size:9.5px;letter-spacing:.11em;text-transform:uppercase;color:var(--ink-2);
+    font-weight:600;display:flex;align-items:center;justify-content:center;flex:none;padding:2px 0}
+  .cvwrap .cvbody{flex:1;min-width:0}
+
+  /* ---------- readout (tooltip) ---------- */
+  .tt{position:fixed;z-index:60;pointer-events:none;opacity:0;transform:translateY(2px);
+    transition:opacity .1s;background:var(--ink);color:var(--surface);border:0;
+    border-radius:var(--r);padding:10px 12px;font-size:12px;max-width:260px;
+    font-variant-numeric:tabular-nums;box-shadow:0 6px 24px -8px rgba(0,0,0,.45)}
+  .tt .h{font-weight:600;margin-bottom:6px;font-size:11px;font-family:var(--font-mono);
+    letter-spacing:.06em;text-transform:uppercase;opacity:.75}
+  .tt .row{display:flex;align-items:center;gap:8px;opacity:.82}
+  .tt .row b{opacity:1;font-weight:600;margin-left:auto;font-family:var(--font-mono)}
+
+  /* ---------- colophon ---------- */
+  .foot{margin-top:80px;padding-top:20px;border-top:1px solid var(--rule);
+    font-size:12px;color:var(--muted);display:flex;flex-wrap:wrap;gap:8px 28px;line-height:1.6}
+  .foot code{font-family:var(--font-mono);font-size:11px;color:var(--ink-2)}
+  .diffkey{display:flex;align-items:center;gap:9px;font-size:11.5px;color:var(--ink-2);
+    margin-bottom:16px;font-family:var(--font-mono);letter-spacing:.03em}
+  .diffbar{width:110px;height:7px;border-radius:1px;
+    background:linear-gradient(90deg,var(--div-neg),var(--div-mid),var(--div-pos));
+    border:1px solid var(--border)}
+
+  /* ---------- part divider ---------- */
+  .t3div{margin-top:104px;padding-top:40px;border-top:1px solid var(--ink)}
+  .t3kick{font-family:var(--font-mono);font-size:10.5px;letter-spacing:.16em;text-transform:uppercase;
+    color:var(--muted);font-weight:500}
+  .t3h{font-family:var(--font-display);font-size:clamp(26px,3.4vw,38px);line-height:1.08;
+    letter-spacing:-.018em;margin:14px 0 14px;font-weight:500;text-wrap:balance;max-width:21ch}
+  .t3sub{font-size:16px;color:var(--ink-2);max-width:64ch;margin:0;line-height:1.6}
+  .seqrow{font-family:var(--font-mono);font-size:9px;letter-spacing:0}
+  .prow{margin-bottom:22px}
+  .prowhead{display:flex;align-items:baseline;gap:10px;margin:0 0 10px;padding-bottom:7px;
+    border-bottom:1px solid var(--grid)}
+  .prowhead .nm{font-size:13.5px;font-weight:600}
+  .prowhead .mt{font-family:var(--font-mono);font-size:10px;color:var(--muted);
+    letter-spacing:.09em;text-transform:uppercase;margin-left:auto}
+  .reslist{font-family:var(--font-mono);font-size:10px;color:var(--ink-2);margin-top:7px;
+    line-height:1.6;display:flex;flex-wrap:wrap;gap:4px 7px;align-items:center}
+  .reslist b{color:var(--ink);font-weight:600}
+  .respill{border:1px solid var(--border);border-radius:3px;padding:1px 5px;
+    font-variant-numeric:tabular-nums}
+  .charged{fill:var(--div-neg);font-weight:700}
+  .cbar{cursor:grab} .cbar:active{cursor:grabbing}
+  .focusbar{display:flex;align-items:center;gap:14px;flex-wrap:wrap;margin-top:26px;
+    padding:14px 0;border-top:1px solid var(--border);border-bottom:1px solid var(--border)}
+  .focusbar .lbl{color:var(--ink);font-weight:600}
+  .segbig button{font-size:13px;padding:6px 15px}
+  .focushint{font-size:12px;color:var(--muted);margin-left:auto;font-family:var(--font-mono);
+    letter-spacing:.03em}
+
+  @media(max-width:900px){
+    .wrap{padding:0 20px 90px}
+    .toolbar{position:static;margin:0 -20px;padding:12px 20px}
+    .thesis{grid-template-columns:1fr;border-bottom:0}
+    .stat{border-left:0;border-bottom:1px solid var(--border);padding-left:0}
+    .cols{grid-template-columns:1fr}
+    .focushint{margin-left:0}
+  }
+  @media(prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
+</style>
+
+<div class="wrap">
+  <header class="top">
+    <h1>Does the drug reshape how A&beta;42 moves?</h1>
+    <p class="lede">Adaptive molecular-dynamics simulations of the Alzheimer&rsquo;s
+      peptide <b>A&beta;42</b>, studied three ways: on its own, with the phase-3 drug <b>tramiprosate&nbsp;(TMP)</b>,
+      and with its metabolite <b>SPA</b>. <b>Ensemble Lens</b> puts all three systems side by side in every
+      view, so the effect of a drug candidate on the conformational ensemble reads at a glance instead of
+      from a stack of separate static charts.</p>
+    <div class="thesis" id="thesis"></div>
+  </header>
+
+  <div class="toolbar">
+    <div class="ctl">
+      <span class="lbl">Markov states</span>
+      <div class="seg" id="segK" role="group" aria-label="Number of Markov states">
+        <button data-k="2" aria-pressed="false">2</button>
+        <button data-k="3" aria-pressed="true">3</button>
+        <button data-k="4" aria-pressed="false">4</button>
+      </div>
+    </div>
+    <div class="ctl">
+      <span class="lbl">Align strips</span>
+      <div class="seg" id="segAlign" role="group" aria-label="Strip alignment">
+        <button data-a="global" aria-pressed="true">Start time</button>
+        <button data-a="local" aria-pressed="false">Own frame 0</button>
+      </div>
+    </div>
+    <div class="legend" id="legend" aria-label="Markov state legend"></div>
+  </div>
+
+  <!-- A: occupancy -->
+  <section class="panel">
+    <div class="phead"><h2>1 · Conformational balance</h2><span class="tag">task T1 · overview</span></div>
+    <p class="pdesc">The share of all simulated time each system spends in each Markov state: its
+      stationary distribution. A drug that stabilises or destabilises a conformation shows up as a shift in
+      these bars. Whiskers are 95% bootstrap confidence intervals over trajectories. State numbers are matched
+      across the three systems by CoVAMPnet, so state&nbsp;<i>k</i> refers to the same conformational basin in
+      each. The glyph under each tick is the <b>free peptide's</b> conformer for that state, reused under all
+      three systems. The matched basins are close but not identical, and some match better than others, so
+      hover a glyph for the measured cross-system agreement.</p>
+    <div class="cols" id="occ"></div>
+  </section>
+
+  <!-- B: temporal -->
+  <section class="panel">
+    <div class="phead"><h2>2 · Sampling coverage over time</h2><span class="tag">task T1 · convergence check</span></div>
+    <p class="pdesc">A convergence and coverage diagnostic, not real-time kinetics. The horizontal axis is position
+      within the short simulations (aligned by start time), the band is the fraction of trajectories in each state
+      there, and the sparkline above is how many trajectories are still active. Where the band settles and coverage
+      stays thick, the population estimate is trustworthy; where coverage thins toward the right, treat it with
+      caution.</p>
+    <div class="cols" id="temporal"></div>
+  </section>
+
+  <!-- C: transitions -->
+  <section class="panel">
+    <div class="phead"><h2>3 · Transition structure</h2><span class="tag">task T2 · comparison</span></div>
+    <p class="pdesc">Probability of moving from the row state to the column state over a 40-frame lag. These
+      states are <b>highly metastable</b>: the dashed <b>diagonal</b> (staying put) is ~97 to 100%, so the
+      peptide rarely switches inside one short simulation, which is exactly why adaptive sampling has to
+      re-seed (see Panel&nbsp;4). The tiny <b>off-diagonal</b> switching probabilities are therefore colour-scaled
+      to <em>their own</em> range so the pattern is visible: darkest = the most common escape route. Switch to
+      <b>difference&nbsp;vs&nbsp;free</b> to see how each drug re-routes them. Blue = more likely with the
+      drug, red = less.</p>
+    <div class="ctl" style="margin-bottom:12px">
+      <span class="lbl">Show</span>
+      <div class="seg" id="segMode" role="group" aria-label="Matrix mode">
+        <button data-m="abs" aria-pressed="true">Probability</button>
+        <button data-m="diff" aria-pressed="false">Difference vs free</button>
+      </div>
+    </div>
+    <div id="transkey"></div>
+    <div class="cols" id="trans"></div>
+    <p class="pdesc" style="margin:22px 0 10px"><b>Model validation, implied timescales.</b> A Markov model is
+      only trustworthy at a lag where the relaxation timescales stop depending on the lag. Each line is one
+      relaxation timescale of the model, numbered from the slowest; the dashed marker is the lag used above
+      (&tau;&nbsp;=&nbsp;40&nbsp;frames). Curves that flatten to the right mean the model is self-consistent there.</p>
+    <div id="itskey"></div>
+    <div class="cols" id="itsrow"></div>
+  </section>
+
+  <!-- D: genealogy -->
+  <section class="panel">
+    <div class="phead"><h2>4 · Adaptive-sampling genealogy</h2><span class="tag">novel · the &ldquo;adaptive&rdquo; view</span></div>
+    <p class="pdesc">Adaptive sampling spawns each new simulation from a promising frame of an earlier one.
+      Each dot is a simulation, placed by the epoch (round) it was launched in and coloured by the state it
+      spends most time in; lines connect a simulation to its seed. This exposes <em>where</em> the sampling
+      chose to explore, a structure the standard charts discard entirely.</p>
+    <div class="cols" id="gen"></div>
+  </section>
+
+  <!-- E: strips -->
+  <section class="panel">
+    <div class="phead"><h2>5 · Ensemble strip matrix</h2><span class="tag">task T1 · every trajectory</span></div>
+    <p class="pdesc">One row per simulation, coloured frame-by-frame by its assigned state. This is the whole
+      ensemble at once, the raw material behind every chart above, revealing when states appear,
+      how persistent they are, and how coverage builds up over time.</p>
+    <div class="cols" id="strips"></div>
+  </section>
+
+  <!-- ============ T3 structural reasoning ============ -->
+  <div class="t3div">
+    <span class="t3kick">Structural reasoning</span>
+    <h2 class="t3h">What <em>are</em> the states, and where does the drug bind?</h2>
+    <p class="t3sub">The panels above treat each Markov state as a label. These connect the label back to the
+      3D peptide, reconstructed from the full atomistic trajectories, so a state becomes a shape,
+      and a drug effect becomes a set of amino acids.</p>
+    <div class="focusbar">
+      <span class="lbl">Focus system &rarr;</span>
+      <div class="seg segbig" id="segSys" role="group" aria-label="Structural focus system">
+        <button data-s="0" aria-pressed="true">Aβ42 free</button>
+        <button data-s="1" aria-pressed="false">+ TMP</button>
+        <button data-s="2" aria-pressed="false">+ SPA</button>
+      </div>
+      <span class="focushint">drives the contact maps (6) &amp; 3D shapes (9)</span>
+    </div>
+  </div>
+
+  <!-- 6: contact maps -->
+  <section class="panel">
+    <div class="phead"><h2>6 · State fingerprints</h2><span class="tag">task T3 · what defines a state</span></div>
+    <p class="pdesc">Each Markov state is <em>defined</em> by which residues touch which, shown here as a
+      42&times;42 residue contact-frequency map (darker = the two residues are in contact more often).
+      Switch to <b>enrichment</b> to subtract the ensemble average, isolating the contacts that make each
+      state distinctive: blue = over-represented in this state, red = under-represented.</p>
+    <div class="ctl" style="margin-bottom:12px">
+      <span class="lbl">Show</span>
+      <div class="seg" id="segCMode" role="group" aria-label="Contact map mode">
+        <button data-m="abs" aria-pressed="true">Contact frequency</button>
+        <button data-m="enr" aria-pressed="false">Enrichment vs ensemble</button>
+      </div>
+    </div>
+    <div id="cmapkey"></div>
+    <div class="cols" id="cmaps"></div>
+  </section>
+
+  <!-- 7: drug binding -->
+  <section class="panel">
+    <div class="phead"><h2>7 · Where the drug binds</h2><span class="tag">novel · T3 · residue interactions</span></div>
+    <p class="pdesc">How often each amino acid along the Aβ42 sequence contacts a drug molecule, per Markov state.
+      Because the box holds 100 ligand copies, some contact happens by chance; <b>specific binding</b> subtracts
+      that background (a contact map built from time-decorrelated frames), leaving only engagement above chance.
+      The coloured bands mark the aggregation-critical regions. <b>This is where the two drugs part
+      company.</b> Switch between <b>observed</b> and <b>specific</b>: raw contact makes them look alike,
+      both piled onto the N-terminus, but once chance is removed tramiprosate engages <b>acidic</b> side
+      chains almost exclusively (E3, D7, E22, D1, D23, E11) while SPA engages only <b>basic</b> ones
+      (R5, K28, K16). The reason is the ligands themselves: tramiprosate is a zwitterion carrying a
+      cationic amine, SPA a dianion with none, so it can only salt-bridge to Arg and Lys. K16 opens the
+      KLVFF core and K28 forms the D23-K28 salt bridge of the aggregation-competent turn.</p>
+    <div class="ctl" style="margin-bottom:10px">
+      <span class="lbl">Show</span>
+      <div class="seg" id="segDrug" role="group" aria-label="Drug binding mode">
+        <button data-m="spec" aria-pressed="true">Specific (above chance)</button>
+        <button data-m="obs" aria-pressed="false">Observed</button>
+      </div>
+    </div>
+    <div id="drugkey"></div>
+    <div id="regionkey" class="ckey"></div>
+    <div class="cols" id="drugmaps" style="grid-template-columns:1fr 1fr"></div>
+  </section>
+
+  <!-- 8: binding pocket -->
+  <section class="panel">
+    <div class="phead"><h2>8 · The binding pocket</h2><span class="tag">novel · T3 · the drug in place</span></div>
+    <p class="pdesc">The trajectories carry all-atom coordinates for the ligand as well as the peptide, so the
+      binding site can be shown directly rather than inferred. For each state we take the frame in which the
+      nearest of the 100 ligand copies makes the most residue contacts, and draw that pose: the C&alpha;
+      backbone in grey, the <b>drug molecule</b> in ball-and-stick, and the peptide atoms lining the site.
+      The backbone is thickened and tinted by how often each residue touches the drug across the whole state,
+      so a persistent site is visible as a thick coloured stretch rather than one lucky frame. Because A&beta;42
+      is disordered, the site is a <b>fuzzy, sequence-defined pocket</b>, not a rigid cleft, which is exactly
+      why it has to be read as an ensemble.</p>
+    <div class="ctl" style="margin-bottom:12px">
+      <span class="lbl">Show</span>
+      <div class="seg" id="segPocket" role="group" aria-label="Pocket view mode">
+        <button data-m="pose" aria-pressed="true">Best bound pose</button>
+        <button data-m="cloud" aria-pressed="false">All bound positions</button>
+      </div>
+    </div>
+    <div id="pocketkey"></div>
+    <div id="pockets"></div>
+  </section>
+
+  <!-- 9: 3D backbone -->
+  <section class="panel">
+    <div class="phead"><h2>9 · Representative shapes</h2><span class="tag">task T3 · abstract → spatial</span></div>
+    <p class="pdesc">Each state is a disordered <em>ensemble</em>, not one fold, so several superposed C&alpha;
+      backbones are overlaid (N-terminus blue to C-terminus amber); the more they diverge, the more disordered
+      the state. Drag any structure to rotate them together. Red beads mark the top drug-contact residues, and
+      the <b>Rg</b> and mean per-residue flexibility (RMSF) are noted.</p>
+    <div class="cols" id="backbones"></div>
+  </section>
+
+  <!-- 10: conformational landscape -->
+  <section class="panel">
+    <div class="phead"><h2>10 · Conformational landscape</h2><span class="tag">novel · T3 · where the drug pushes</span></div>
+    <p class="pdesc">Every frame placed by compactness (radius of gyration, x) and aggregation-prone
+      &beta;-content (fraction of residues in &beta;-strand, y), as a free-energy map (darker = more populated =
+      lower energy). Rings mark each Markov state&rsquo;s centre. Comparing the three maps shows, in one view,
+      how each drug moves the whole ensemble across conformational space. Read as a folding funnel: dark
+      wells are basins, rings are the Markov states that sit in them. The curve along the top is the
+      distribution of compactness on its own, with the free peptide dashed in behind each drug for
+      direct comparison, because the shift in compactness is hard to judge from the 2D density alone.</p>
+    <div id="landkey"></div>
+    <div class="cols" id="landscape"></div>
+  </section>
+
+  <!-- 11: secondary structure -->
+  <section class="panel">
+    <div class="phead"><h2>11 · &beta;-strand propensity</h2><span class="tag">task T3 · aggregation readout</span></div>
+    <p class="pdesc">The fraction of frames each residue sits in a &beta;-strand, averaged over the ensemble
+      (population-weighted across states), for all three systems. &beta;-structure in the <b>CHC (17-21)</b> and
+      <b>C-terminus (30-42)</b> is what drives Aβ42 aggregation, so comparing the three areas is the most direct
+      readout of whether a drug lowers aggregation-prone structure. Bands mark those regions.
+      We state the assumption plainly: <b>we take more &beta;-strand in these regions as predictive of more
+      aggregation.</b> These simulations contain a single peptide, so they cannot show aggregation directly;
+      the &beta;-content is a structural proxy, not an aggregation assay.</p>
+    <div id="betaregionkey" class="ckey"></div>
+    <div class="cols" id="betamaps"></div>
+  </section>
+
+  <div class="foot">
+    <span>Data: CoVAMPnet, Marques et&nbsp;al., <em>JACS&nbsp;Au</em> 2024 · <code>zsab2/3/4</code>, 955 trajectories, ~1.9M frame-states.</span>
+    <span>Prototype for the Bio+MedVis Challenge @ IEEE&nbsp;VIS&nbsp;2026.</span>
+  </div>
+</div>
+
+<div class="tt" id="tt" role="status" aria-live="polite"></div>
+
+<script id="track1-data" type="application/json">__DATA__</script>
+<script id="track1-struct" type="application/json">__STRUCT__</script>
+<script id="track1-struct2" type="application/json">__STRUCT2__</script>
+<script id="track1-pocket" type="application/json">__POCKET__</script>
+<script id="track1-corr" type="application/json">__CORR__</script>
+<script>
+"use strict";
+const DATA = JSON.parse(document.getElementById("track1-data").textContent);
+const SYS = DATA.systems;
+const STRUCT = JSON.parse(document.getElementById("track1-struct").textContent);
+const SST = STRUCT.systems, IU = STRUCT.meta.iu, NRES = STRUCT.meta.nres;
+const STRUCT2 = JSON.parse(document.getElementById("track1-struct2").textContent);
+const SST2 = STRUCT2.systems, S2META = STRUCT2.meta;
+const POCKET = JSON.parse(document.getElementById("track1-pocket").textContent);
+window.POCKET = POCKET;
+// How well CoVAMPnet's state k actually corresponds across the three systems, measured
+// on Ca-Ca distance matrices against a split-half sampling floor. A reviewer's domain
+// expert objected that the shared glyph implies the states are identical; they are not,
+// so the panel states which system the glyph comes from and shows the match per state.
+const CORR = JSON.parse(document.getElementById("track1-corr").textContent);
+let SYSSEL = 0, CMODE = "abs", DRUGMODE = "spec", POCKETMODE = "pose";
+const ROT = {ax:-0.35, ay:0.6};
+const SVGNS = "http://www.w3.org/2000/svg";
+const stateColor = k => getComputedStyle(document.documentElement).getPropertyValue("--s"+k).trim();
+let K = 3, ALIGN = "global", MODE = "abs";
+const root = document.documentElement;
+const tt = document.getElementById("tt");
+
+// ---- tiny DOM helpers ----
+function S(tag, attrs){ const e=document.createElementNS(SVGNS,tag);
+  if(attrs) for(const k in attrs) e.setAttribute(k, attrs[k]); return e; }
+function svgEl(w,h){ const s=S("svg",{viewBox:`0 0 ${w} ${h}`,width:w,height:h}); s.style.height="auto"; return s; }
+function T(x,y,txt,cls,anchor){ const t=S("text",{x,y,class:cls||"axlab"}); if(anchor)t.setAttribute("text-anchor",anchor);
+  t.textContent=txt; return t; }
+function colW(el){ const w=el.getBoundingClientRect().width; return w>0?w:340; }
+
+// ============================================================================
+// Shared axis furniture. Every quantitative panel routes through axisFrame() so
+// that no plot is left with an unnamed or unticked dimension: each one states
+// what x is, what y is, and in what units.
+// ============================================================================
+function ticksBy(lo,hi,step,fmt){
+  const out=[]; const s=Math.ceil(lo/step)*step;
+  for(let v=s; v<=hi+1e-9; v+=step) out.push({v, label:(fmt?fmt(v):String(+v.toFixed(6)))});
+  return out;
+}
+function autoTicks(lo,hi,target,fmt){
+  const span=hi-lo; if(!(span>0)) return [{v:lo,label:fmt?fmt(lo):String(lo)}];
+  const raw=span/(target||4), mag=Math.pow(10,Math.floor(Math.log10(raw))), n=raw/mag;
+  const step=(n<1.5?1:n<3?2:n<7?5:10)*mag;
+  return ticksBy(lo,hi,step,fmt);
+}
+/* o = {x,y,w,h, xScale,yScale, xTicks,yTicks, xTitle,yTitle, yGrid, xGrid,
+        yTitleDx, xTitleDy, noXLine, noYLine} */
+function axisFrame(svg,o){
+  const {x,y,w,h}=o;
+  if(!o.noYLine) svg.appendChild(S("line",{x1:x,y1:y,x2:x,y2:y+h,class:"base"}));
+  if(!o.noXLine) svg.appendChild(S("line",{x1:x,y1:y+h,x2:x+w,y2:y+h,class:"base"}));
+  (o.yTicks||[]).forEach(t=>{ const ty=o.yScale(t.v);
+    if(o.yGrid) svg.appendChild(S("line",{x1:x,y1:ty,x2:x+w,y2:ty,class:"grid"}));
+    svg.appendChild(S("line",{x1:x-3,y1:ty,x2:x,y2:ty,class:"base"}));
+    svg.appendChild(T(x-6,ty+3.2,t.label,"axlab","end")); });
+  (o.xTicks||[]).forEach(t=>{ const tx=o.xScale(t.v);
+    if(o.xGrid) svg.appendChild(S("line",{x1:tx,y1:y,x2:tx,y2:y+h,class:"grid"}));
+    svg.appendChild(S("line",{x1:tx,y1:y+h,x2:tx,y2:y+h+3,class:"base"}));
+    svg.appendChild(T(tx,y+h+13,t.label,"axlab","middle")); });
+  if(o.xTitle) svg.appendChild(T(x+w/2,y+h+(o.xTitleDy==null?26:o.xTitleDy),o.xTitle,"axtitle","middle"));
+  if(o.yTitle){ const t=T(0,0,o.yTitle,"axtitle","middle");
+    t.setAttribute("transform",`translate(${x-(o.yTitleDx==null?32:o.yTitleDx)} ${y+h/2}) rotate(-90)`);
+    svg.appendChild(t); }
+}
+
+// ---- colour-scale keys: a colour that carries a value always shows its numbers ----
+function rampCss(fn,n){ const st=[]; for(let i=0;i<=n;i++){ const t=i/n;
+  st.push(`${fn(t)} ${(t*100).toFixed(1)}%`); } return `linear-gradient(90deg,${st.join(",")})`; }
+function colourKey(host,o){
+  // o = {title, css, labels:[...], width}
+  const wrap=document.createElement("div"); wrap.className="ckey";
+  wrap.innerHTML=`<span class="ct">${o.title}</span>
+    <span class="cramp"><span class="cbarv" style="width:${o.width||150}px;background:${o.css}"></span>
+    <span class="cticks" style="width:${o.width||150}px">${o.labels.map(l=>`<span>${l}</span>`).join("")}</span></span>`;
+  (o.extra||[]).forEach(e=>{ const s=document.createElement("span"); s.className="citem";
+    s.innerHTML=e; wrap.appendChild(s); });
+  host.appendChild(wrap); return wrap;
+}
+function seqKey(host,title,labels,width){
+  return colourKey(host,{title,css:rampCss(t=>seqColor(t),12),labels,width}); }
+function divKey(host,title,labels,max,width){
+  return colourKey(host,{title,css:rampCss(t=>divColor((t*2-1)*max,max),12),labels,width}); }
+
+// ---- principal-axis projection, for the small structure glyphs -------------------
+// A 42-residue Ca trace read edge-on is unreadable; project onto its own two
+// principal axes so each state's shape is shown at maximum spread.
+function pca2(P){
+  const n=P.length, m=[0,0,0];
+  for(const p of P){ m[0]+=p[0]; m[1]+=p[1]; m[2]+=p[2]; }
+  m[0]/=n; m[1]/=n; m[2]/=n;
+  const C=[[0,0,0],[0,0,0],[0,0,0]];
+  for(const p of P){ const d=[p[0]-m[0],p[1]-m[1],p[2]-m[2]];
+    for(let i=0;i<3;i++) for(let j=0;j<3;j++) C[i][j]+=d[i]*d[j]; }
+  const mul=(M,v)=>[M[0][0]*v[0]+M[0][1]*v[1]+M[0][2]*v[2],
+                    M[1][0]*v[0]+M[1][1]*v[1]+M[1][2]*v[2],
+                    M[2][0]*v[0]+M[2][1]*v[1]+M[2][2]*v[2]];
+  const nrm=v=>{ const L=Math.hypot(v[0],v[1],v[2])||1; return [v[0]/L,v[1]/L,v[2]/L]; };
+  const power=M=>{ let v=nrm([0.577,0.577,0.577]);
+    for(let k=0;k<40;k++) v=nrm(mul(M,v)); return v; };
+  const e1=power(C);
+  const lam=(v=>v[0]*e1[0]+v[1]*e1[1]+v[2]*e1[2])(mul(C,e1));
+  const C2=C.map((row,i)=>row.map((v,j)=>v-lam*e1[i]*e1[j]));
+  const e2=power(C2);
+  return {mean:m, e1, e2};
+}
+function projectCA(P){
+  const {mean,e1,e2}=pca2(P);
+  return P.map(p=>{ const d=[p[0]-mean[0],p[1]-mean[1],p[2]-mean[2]];
+    return [d[0]*e1[0]+d[1]*e1[1]+d[2]*e1[2], d[0]*e2[0]+d[1]*e2[1]+d[2]*e2[2]]; });
+}
+/* A small Ca-backbone glyph so a Markov state reads as a SHAPE, not just a label.
+   Requested by the expert review: states must not stay abstract. */
+function caGlyph(svg,cx,cy,size,frames,tint){
+  if(!frames||!frames.length) return;
+  const proj=frames.map(projectCA);
+  let mx=0; proj.forEach(f=>f.forEach(p=>{ mx=Math.max(mx,Math.abs(p[0]),Math.abs(p[1])); }));
+  const sc=(size/2-1)/(mx||1);
+  const g=S("g",{});
+  proj.forEach((f,fi)=>{ let d="";
+    f.forEach((p,i)=>{ d+=(i?" L":"M")+(cx+p[0]*sc).toFixed(1)+" "+(cy-p[1]*sc).toFixed(1); });
+    g.appendChild(S("path",{d,fill:"none",stroke:tint,"stroke-width":fi?0.7:1.35,
+      "stroke-linejoin":"round","stroke-linecap":"round",opacity:fi?0.3:0.95})); });
+  svg.appendChild(g); return g;
+}
+
+// ---- tooltip ----
+function showTT(html,ev){ tt.innerHTML=html; tt.style.opacity="1";
+  const pad=14, w=tt.offsetWidth, h=tt.offsetHeight;
+  let x=ev.clientX+pad, y=ev.clientY+pad;
+  if(x+w>innerWidth-8) x=ev.clientX-w-pad;
+  if(y+h>innerHeight-8) y=ev.clientY-h-pad;
+  tt.style.left=x+"px"; tt.style.top=y+"px"; }
+function hideTT(){ tt.style.opacity="0"; }
+
+// ---- state highlight ----
+function hl(k){ if(k===null) root.removeAttribute("data-hl"); else root.setAttribute("data-hl",k);
+  document.querySelectorAll("#legend .item").forEach(it=>{
+    it.classList.toggle("mut", k!==null && +it.dataset.k!==k); }); }
+
+// ---- header thesis ----
+function renderThesis(){
+  const host=document.getElementById("thesis"); host.innerHTML="";
+  const free=SYS[0].params[K].occupancy, tmp=SYS[1].params[K].occupancy, spa=SYS[2].params[K].occupancy;
+  // Identify states by MEANING, not by a fixed index, so the headline stays true at any K:
+  //   kSpa = the state whose population SPA raises most vs the free peptide
+  //   kDom = the state the free peptide occupies most
+  let kSpa=0, best=-Infinity;
+  for(let k=0;k<K;k++){ const d=spa[k]-free[k]; if(d>best){ best=d; kSpa=k; } }
+  let kDom=0; for(let k=0;k<K;k++) if(free[k]>free[kDom]) kDom=k;
+  // structural character of kSpa, read from the trajectories (compact / extended / intermediate)
+  let charac="";
+  const s2=(typeof sst2Sys==="function")?sst2Sys(2):null;
+  if(s2){ const st=s2.params[K].states, mine=st[String(kSpa)];
+    const rgs=Object.keys(st).map(k=>[+k,st[k].rgMean]).filter(a=>a[1]!=null).sort((a,b)=>a[1]-b[1]);
+    if(mine && rgs.length>1){
+      charac = rgs[0][0]===kSpa ? `the most compact conformation here (Rg ${mine.rgMean}Å)`
+             : rgs[rgs.length-1][0]===kSpa ? `the most extended conformation here (Rg ${mine.rgMean}Å)`
+             : `an intermediate conformation (Rg ${mine.rgMean}Å)`; } }
+  const ratio = free[kSpa]>0.0005 ? `${(spa[kSpa]/free[kSpa]).toFixed(1)}&times; more` : "far more";
+  const cards=[
+    {k:'Ensemble analysed',v:`955 <small>trajectories</small>`,sub:'3 systems, 16 epochs, ~1.9M frame-states'},
+    {k:`<span class="dot" style="background:${stateColor(kSpa)}"></span>State SPA stabilises`,
+      v:`${Math.round(spa[kSpa]*100)}% <small>vs ${Math.round(free[kSpa]*100)}% free</small>`,
+      sub:`SPA shifts the ensemble into state&nbsp;${kSpa}, ${charac||"a distinct conformation"}, ${ratio} than the free peptide.`},
+    {k:`<span class="dot" style="background:${stateColor(kDom)}"></span>Free peptide's main state`,
+      v:`${Math.round(free[kDom]*100)}% <small>&rarr; ${Math.round(tmp[kDom]*100)}% with TMP</small>`,
+      sub:`State&nbsp;${kDom} dominates the free ensemble; tramiprosate ${tmp[kDom]<free[kDom]?"erodes":"reinforces"} it.`},
+  ];
+  cards.forEach(c=>{ const d=document.createElement("div"); d.className="stat";
+    d.innerHTML=`<div class="k">${c.k}</div><div class="v">${c.v}</div><div class="sub">${c.sub}</div>`;
+    host.appendChild(d); });
+  const note=document.createElement("p");
+  note.style.cssText="grid-column:1/-1;margin:2px 2px 0;font-size:12px;color:var(--muted)";
+  note.innerHTML=`These headline figures follow the <b>Markov states</b> control (currently <b>${K}-state</b>). They name states by role, the one SPA stabilises most and the one the free peptide favours, so the numbers stay consistent with the panels below at every setting.`;
+  host.appendChild(note);
+}
+
+// ---- legend ----
+function renderLegend(){
+  const host=document.getElementById("legend"); host.innerHTML="";
+  for(let k=0;k<K;k++){ const b=document.createElement("button");
+    b.className="item"; b.dataset.k=k;
+    b.innerHTML=`<span class="dot" style="background:${stateColor(k)}"></span>State ${k}`;
+    b.addEventListener("mouseenter",()=>hl(k)); b.addEventListener("mouseleave",()=>hl(null));
+    b.addEventListener("focus",()=>hl(k)); b.addEventListener("blur",()=>hl(null));
+    host.appendChild(b); }
+}
+
+function sysCaption(s){ const idx=SYS.indexOf(s);
+  return `<span class="syschip" style="background:${stateColor(1)};background:${['#7a8391','#7a8391','#7a8391'][idx]}"></span>`; }
+
+function figFor(host,s,metaTxt){
+  const fig=document.createElement("figure"); fig.className="col";
+  const cap=document.createElement("figcaption");
+  cap.innerHTML=`<span class="name">${s.label}</span><span class="meta">${metaTxt||""}</span>`;
+  fig.appendChild(cap); host.appendChild(fig); return fig;
+}
+
+// ============ Panel A: occupancy ============
+// Bars along a real categorical x axis (Markov state) against a shared quantitative
+// y axis (% of simulated time), so the same height means the same thing in all three
+// systems. Under each tick sits a Ca-backbone glyph of that state, so the axis
+// categories are recognisable conformations rather than bare numbers.
+function barPath(x,y,w,h,r){
+  r=Math.max(0,Math.min(r,w/2,h));
+  return `M${x} ${y+h} L${x} ${y+r} Q${x} ${y} ${x+r} ${y} L${x+w-r} ${y} `+
+         `Q${x+w} ${y} ${x+w} ${y+r} L${x+w} ${y+h} Z`;
+}
+function renderOcc(){
+  const host=document.getElementById("occ"); host.innerHTML="";
+  // one shared y scale across the three systems: comparison is the whole point
+  let yMax=0;
+  SYS.forEach(s=>{ const occ=s.params[K].occupancy, ci=s.params[K].occCI;
+    for(let k=0;k<K;k++) yMax=Math.max(yMax, ci?ci[k][1]:occ[k], occ[k]); });
+  yMax=Math.min(1, Math.ceil(yMax*10)/10+0.02);
+  const yTicks=ticksBy(0,yMax,yMax>0.55?0.2:0.1,v=>Math.round(v*100)+"%");
+  // The glyph belongs to the STATE, not to the system: CoVAMPnet matches state k
+  // across all three systems, so it is drawn ONCE from the free peptide and reused
+  // under every system. Drawing each system's own copy read as "the drug changes the
+  // shape", which is the opposite of the finding (the drug changes the populations).
+  const REF=sst2Sys(0);
+  SYS.forEach((s,si)=>{
+    const occ=s.params[K].occupancy, ci=s.params[K].occCI;
+    const fig=figFor(host,s,`${s.nTraj} traj`);
+    const W=colW(fig), H=268, padL=40,padR=10,padT=14,padB=92;
+    const iw=W-padL-padR, ih=H-padT-padB;
+    const band=iw/K, bw=Math.min(46,band*0.56);
+    const xs=k=>padL+band*(k+0.5);
+    const ys=v=>padT+ih*(1-v/yMax);
+    const svg=svgEl(W,H);
+    axisFrame(svg,{x:padL,y:padT,w:iw,h:ih,xScale:xs,yScale:ys,yTicks,yGrid:true,
+      xTicks:[], yTitle:"% OF SIMULATED TIME", yTitleDx:34,
+      xTitle:"MARKOV STATE", xTitleDy:82});
+    for(let k=0;k<K;k++){
+      const h=Math.max(1,ih*occ[k]/yMax), x=xs(k)-bw/2, y=padT+ih-h;
+      const lo=ci?ci[k][0]:occ[k], hi=ci?ci[k][1]:occ[k];
+      const r=S("path",{d:barPath(x,y,bw,h,4),fill:stateColor(k),class:"st"+k});
+      r.addEventListener("mouseenter",e=>{hl(k);
+        showTT(`<div class="h">${s.label}</div><div class="row"><span class="dot" style="background:${stateColor(k)}"></span>State ${k}<b>${(occ[k]*100).toFixed(1)}%</b></div><div class="row">95% CI<b>${(lo*100).toFixed(0)} to ${(hi*100).toFixed(0)}%</b></div>`,e);});
+      r.addEventListener("mousemove",e=>showTT(tt.innerHTML,e));
+      r.addEventListener("mouseleave",()=>{hl(null);hideTT();});
+      svg.appendChild(r);
+      // 95% bootstrap CI over trajectories
+      if(ci){ const wx=xs(k), y1=ys(hi), y2=ys(lo);
+        svg.appendChild(S("line",{x1:wx,y1,x2:wx,y2,stroke:"var(--ink)","stroke-width":1.4,opacity:.6}));
+        svg.appendChild(S("line",{x1:wx-4,y1,x2:wx+4,y2:y1,stroke:"var(--ink)","stroke-width":1.4,opacity:.6}));
+        svg.appendChild(S("line",{x1:wx-4,y1:y2,x2:wx+4,y2,stroke:"var(--ink)","stroke-width":1.4,opacity:.6})); }
+      svg.appendChild(T(xs(k),ys(hi)-7,`${Math.round(occ[k]*100)}%`,"vlab","middle"));
+      // x tick: the state's shape (one reference per state), then its number
+      const gy=padT+ih+29;
+      if(REF && REF.params[K] && REF.params[K].states[String(k)]){
+        const gl=caGlyph(svg,xs(k),gy,Math.min(46,band*0.94),
+          (REF.params[K].states[String(k)].ensemble||[]).slice(0,3),stateColor(k));
+        // The glyph is the FREE peptide's conformer, reused under every system. That is
+        // an approximation: the matched states are not identical across systems. Rather
+        // than assert sameness on the canvas, expose the measured agreement on demand.
+        const c=CORR&&CORR.K===K?(CORR.states||{})[String(k)]:null;
+        if(gl&&c){
+          gl.style.cursor="help";
+          gl.addEventListener("mouseenter",e=>{hl(k);
+            showTT(`<div class="h">State ${k} across the three systems</div>`+
+              `<div class="row">reference shape from<b>free peptide</b></div>`+
+              `<div class="row">cross-system difference<b>${c.sameState} &#8491;</b></div>`+
+              `<div class="row">sampling floor<b>${CORR.meanNoiseFloor} &#8491;</b></div>`+
+              `<div class="row">this state's own spread<b>${CORR.spread} &#8491;</b></div>`+
+              `<div class="row">verdict<b>${c.verdict}</b></div>`,e);});
+          gl.addEventListener("mousemove",e=>showTT(tt.innerHTML,e));
+          gl.addEventListener("mouseleave",()=>{hl(null);hideTT();});
+        }
+      }
+      const lab=T(xs(k),padT+ih+58,"S"+k,"","middle");
+      lab.setAttribute("fill",stateColor(k)); lab.setAttribute("font-size","10.5");
+      lab.setAttribute("font-weight","700"); lab.style.fontFamily="var(--font-mono)";
+      svg.appendChild(lab);
+    }
+    fig.appendChild(svg);
+  });
+}
+
+// ============ Panel B: temporal streamgraph ============
+function renderTemporal(){
+  const host=document.getElementById("temporal"); host.innerHTML="";
+  SYS.forEach(s=>{
+    const p=s.params[K], temp=p.temporal, n=temp.length;
+    const fig=figFor(host,s,`${p.maxTime} frames`);
+    const W=colW(fig), H=232, padL=42,padR=10,padT=44,padB=46;
+    const iw=W-padL-padR, ih=H-padT-padB;
+    const svg=svgEl(W,H);
+    const maxActive=Math.max(...temp.map(b=>b.active))||1;
+    const xs=i=>padL+iw*i/(n-1);
+    const ys=v=>padT+ih*(1-v);
+    // coverage sparkline in its own labelled band above the plot
+    const spH=20, spB=padT-9;
+    let sp="M"+padL+" "+spB;
+    temp.forEach((b,i)=>{ const y=spB-(b.active/maxActive)*spH; sp+=` L${xs(i).toFixed(1)} ${y.toFixed(1)}`; });
+    sp+=` L${padL+iw} ${spB} Z`;
+    svg.appendChild(S("path",{d:sp,fill:"var(--baseline)","fill-opacity":.35,stroke:"none"}));
+    svg.appendChild(S("line",{x1:padL,y1:spB,x2:padL+iw,y2:spB,class:"base"}));
+    svg.appendChild(T(padL,spB-spH-5,"TRAJECTORIES STILL RUNNING","axtitle"));
+    svg.appendChild(T(padL-6,spB-spH+3,maxActive,"axlab","end"));
+    svg.appendChild(T(padL-6,spB+3,"0","axlab","end"));
+    // main plot axes: x = position within a simulation, y = share of trajectories
+    axisFrame(svg,{x:padL,y:padT,w:iw,h:ih,xScale:i=>xs(i),yScale:ys,
+      yTicks:ticksBy(0,1,0.25,v=>Math.round(v*100)+"%"),
+      xTicks:autoTicks(0,p.maxTime,3,v=>Math.round(v)).map(t=>({v:t.v/p.maxTime*(n-1),label:t.label})),
+      yTitle:"% OF TRAJECTORIES", yTitleDx:36,
+      xTitle:"FRAME WITHIN SIMULATION", xTitleDy:28});
+    let cum=temp.map(()=>0);
+    for(let k=0;k<K;k++){
+      let up="", dn="";
+      temp.forEach((b,i)=>{ const v0=cum[i], v1=cum[i]+b.frac[k];
+        up+=(i?" L":"M")+xs(i).toFixed(1)+" "+ys(v1).toFixed(1); });
+      for(let i=n-1;i>=0;i--){ dn+=" L"+xs(i).toFixed(1)+" "+ys(cum[i]).toFixed(1); }
+      const path=S("path",{d:up+dn+" Z",fill:stateColor(k),class:"st"+k,stroke:"var(--surface)","stroke-width":.5});
+      svg.appendChild(path);
+      temp.forEach((b,i)=>cum[i]+=b.frac[k]);
+    }
+    // hover
+    const hover=S("line",{x1:0,y1:padT,x2:0,y2:padT+ih,stroke:"var(--ink)","stroke-width":1,opacity:0});
+    svg.appendChild(hover);
+    const cap=S("rect",{x:padL,y:padT,width:iw,height:ih,fill:"transparent"});
+    cap.addEventListener("mousemove",e=>{ const r=svg.getBoundingClientRect();
+      const px=(e.clientX-r.left)/r.width*W; const i=Math.max(0,Math.min(n-1,Math.round((px-padL)/iw*(n-1))));
+      hover.setAttribute("x1",xs(i)); hover.setAttribute("x2",xs(i)); hover.setAttribute("opacity",.5);
+      const b=temp[i]; let rows="";
+      for(let k=0;k<K;k++) rows+=`<div class="row"><span class="dot" style="background:${stateColor(k)}"></span>State ${k}<b>${Math.round(b.frac[k]*100)}%</b></div>`;
+      showTT(`<div class="h">${s.label} · frame ${Math.round(p.maxTime*i/(n-1))}</div>${rows}<div class="row" style="margin-top:4px">active<b>${b.active}</b></div>`,e); });
+    cap.addEventListener("mouseleave",()=>{hover.setAttribute("opacity",0);hideTT();});
+    svg.appendChild(cap);
+    fig.appendChild(svg);
+  });
+}
+
+// ============ Panel C: transition matrix ============
+function divColor(v,max){ // v in [-max,max] -> diverging
+  const t=Math.max(-1,Math.min(1,v/(max||1)));
+  const mid=getComputedStyle(root).getPropertyValue("--div-mid").trim();
+  const pos=stateColorHex("--div-pos"), neg=stateColorHex("--div-neg");
+  const c=t>=0? mix(mid,pos,t): mix(mid,neg,-t); return c;
+}
+// Sequential ramp. Dark mode gets its OWN steps (low values sink toward the dark
+// surface, high values brighten) rather than reusing the light ramp, which would
+// make near-zero cells the brightest thing on a dark ground.
+const SEQ_LIGHT=["#eef4fc","#cde2fb","#9ec5f4","#6da7ec","#3987e5","#256abf","#184f95","#0d366b"];
+const SEQ_DARK =["#12161c","#16273a","#1b3c5e","#205283","#2a6cab","#3f8cd0","#6fb0e6","#a8d1f6"];
+let _darkCache=null;
+function isDarkSurface(){
+  if(_darkCache===null){ const c=hex2rgb(stateColorHex("--surface")||"#ffffff");
+    _darkCache = (0.2126*c[0]+0.7152*c[1]+0.0722*c[2]) < 128; }
+  return _darkCache;
+}
+function resetThemeCache(){ _darkCache=null; }
+function seqColor(v){ // 0..1 sequential blue ramp, theme aware
+  const stops = isDarkSurface()?SEQ_DARK:SEQ_LIGHT;
+  const t=Math.max(0,Math.min(1,v)); const f=t*(stops.length-1); const i=Math.floor(f);
+  return i>=stops.length-1?stops[stops.length-1]:mix(stops[i],stops[i+1],f-i);
+}
+function stateColorHex(varname){ return getComputedStyle(root).getPropertyValue(varname).trim(); }
+function hex2rgb(h){ h=h.replace('#',''); if(h.length===3)h=h.split('').map(c=>c+c).join('');
+  return [parseInt(h.slice(0,2),16),parseInt(h.slice(2,4),16),parseInt(h.slice(4,6),16)]; }
+function mix(a,b,t){ const A=hex2rgb(a),B=hex2rgb(b);
+  return `rgb(${Math.round(A[0]+(B[0]-A[0])*t)},${Math.round(A[1]+(B[1]-A[1])*t)},${Math.round(A[2]+(B[2]-A[2])*t)})`; }
+
+function renderTrans(){
+  const host=document.getElementById("trans"); host.innerHTML="";
+  const freeM=SYS[0].params[K].transProb;
+  // shared OFF-DIAGONAL scales (the diagonal self-transition ~100% would crush everything)
+  let offMax=1e-9, diffMax=1e-9;
+  SYS.forEach(s=>{ const m=s.params[K].transProb;
+    for(let i=0;i<K;i++)for(let j=0;j<K;j++) if(i!==j){
+      offMax=Math.max(offMax,m[i][j]);
+      diffMax=Math.max(diffMax,Math.abs(m[i][j]-freeM[i][j])); } });
+  // the colour ramp always carries its numbers
+  const kh=document.getElementById("transkey"); kh.innerHTML="";
+  if(MODE==="diff")
+    divKey(kh,"change vs free peptide (percentage points)",
+      [`&minus;${(diffMax*100).toFixed(2)}`,"0",`+${(diffMax*100).toFixed(2)}`],diffMax,190);
+  else
+    seqKey(kh,"off-diagonal switching probability",
+      ["0",`${(offMax*50).toFixed(1)}%`,`${(offMax*100).toFixed(1)}%`],190);
+  const kx=document.createElement("span"); kx.className="citem";
+  kx.innerHTML=`<span class="cswatch" style="background:var(--surface-2);border:1px dashed var(--baseline)"></span>diagonal = stays in state (~97-100%, on its own scale)`;
+  kh.firstChild.appendChild(kx);
+  SYS.forEach(s=>{
+    const M=s.params[K].transProb, MF=s.params[K].mfpt;
+    const fig=figFor(host,s,MODE==="diff"?"Δ switching":"switching");
+    const W=colW(fig), pad=26, gapc=3;
+    const cell=Math.min(46,(W-pad*2-gapc*(K-1))/K);
+    const grid=cell*K+gapc*(K-1), H=grid+pad+40, ox=(W-grid)/2, oy=30;
+    const svg=svgEl(W,H);
+    svg.appendChild(T(ox+grid/2,10,"TO STATE (column)","axtitle","middle"));
+    const fl=T(0,0,"FROM STATE (row)","axtitle","middle");
+    fl.setAttribute("transform",`translate(${ox-24} ${oy+grid/2}) rotate(-90)`);
+    svg.appendChild(fl);
+    for(let i=0;i<K;i++){
+      const cxx=ox+i*(cell+gapc)+cell/2, cyy=oy+i*(cell+gapc)+cell/2;
+      const tx=T(cxx,oy-5,i,"","middle"); tx.setAttribute("fill",stateColor(i));
+      tx.setAttribute("font-weight","700"); tx.setAttribute("font-size","10.5"); svg.appendChild(tx);
+      const ty=T(ox-7,cyy+3.5,i,"","end"); ty.setAttribute("fill",stateColor(i));
+      ty.setAttribute("font-weight","700"); ty.setAttribute("font-size","10.5"); svg.appendChild(ty);
+      for(let j=0;j<K;j++){
+        const raw=M[i][j], base=freeM[i][j], diag=(i===j);
+        const x=ox+j*(cell+gapc), y=oy+i*(cell+gapc);
+        let fill,label,txt;
+        if(diag){                                   // self-transition: muted, it's always ~100%
+          fill="var(--surface-2)"; txt="var(--muted)";
+          label = MODE==="diff" ? sgn((raw-base)*100,0) : (raw*100).toFixed(0);
+        } else if(MODE==="diff"){
+          const val=raw-base; fill=divColor(val,diffMax);
+          txt = Math.abs(val)<diffMax*0.5 ? "var(--ink)" : "#fff";
+          label = sgn(val*100,1);
+        } else {
+          fill=seqColor(raw/offMax); txt = raw/offMax<0.5 ? "var(--ink)" : "#fff";
+          label = (raw*100).toFixed(1);
+        }
+        const r=S("rect",{x,y,width:cell,height:cell,rx:4,fill,
+          stroke:diag?"var(--border)":"var(--border)","stroke-width":1,
+          "stroke-dasharray":diag?"3 2":""});
+        svg.appendChild(r);
+        const tx=T(x+cell/2,y+cell/2+3.5,label,"",'middle'); tx.setAttribute("font-size",diag?"10":"11");
+        tx.setAttribute("font-weight",diag?"500":"600"); tx.setAttribute("fill",txt);
+        tx.style.fontFamily="var(--font-mono)"; svg.appendChild(tx);
+        r.addEventListener("mouseenter",e=>showTT(`<div class="h">${s.label}</div>`+
+          (diag?`<div class="row">stays in state ${i}<b>${(raw*100).toFixed(1)}%</b></div><div class="row">(self-transition)</div>`
+               :`<div class="row">state ${i} → ${j}<b>${(raw*100).toFixed(2)}%</b></div>`+
+                (MF&&MF[i][j]?`<div class="row">mean first passage<b>${Math.round(MF[i][j]).toLocaleString()} fr</b></div>`:"")+
+                (MODE==="diff"?`<div class="row">free<b>${(base*100).toFixed(2)}%</b></div><div class="row">Δ<b>${sgn((raw-base)*100,2)}%</b></div>`:"")),e));
+        r.addEventListener("mousemove",e=>showTT(tt.innerHTML,e));
+        r.addEventListener("mouseleave",hideTT);
+      }
+    }
+    fig.appendChild(svg);
+  });
+}
+function sgn(v,d){ return (v>=0?"+":"")+v.toFixed(d); }
+
+// implied-timescale validation plot (one per system)
+function renderITS(){
+  const host=document.getElementById("itsrow"); host.innerHTML="";
+  const kh=document.getElementById("itskey"); kh.innerHTML="";
+  const tau=(DATA.meta&&DATA.meta.tau)||40;
+  // the ITS lines used to be unlabelled: name each relaxation process
+  const key=document.createElement("div"); key.className="ckey";
+  key.innerHTML=`<span class="ct">relaxation process</span>`;
+  for(let m=0;m<K-1;m++){ const s=document.createElement("span"); s.className="citem";
+    s.innerHTML=`<span class="cline" style="border-top-color:${stateColor(m)}"></span>timescale t<sub>${m+1}</sub>${m===0?" (slowest)":""}`;
+    key.appendChild(s); }
+  const s2=document.createElement("span"); s2.className="citem";
+  s2.innerHTML=`<span class="cline" style="border-top-color:var(--baseline);border-top-style:dashed"></span>lag used above (&tau; = ${tau} frames)`;
+  key.appendChild(s2);
+  kh.appendChild(key);
+  SYS.forEach(s=>{
+    const its=s.params[K].its; if(!its){return;}
+    const lags=its.lags, TS=its.timescales;
+    const fig=figFor(host,s,"lag → timescale");
+    const W=colW(fig), H=196, padL=48,padR=10,padT=14,padB=46, iw=W-padL-padR, ih=H-padT-padB;
+    const L0=Math.log(lags[0]), L1=Math.log(lags[lags.length-1]);
+    const lx=v=>padL+iw*(Math.log(v)-L0)/(L1-L0);
+    let maxT=1; TS.forEach(r=>r.forEach(t=>{if(t)maxT=Math.max(maxT,t);})); maxT*=1.1;
+    const ly=v=>padT+ih*(1-v/maxT);
+    const svg=svgEl(W,H);
+    axisFrame(svg,{x:padL,y:padT,w:iw,h:ih,xScale:lx,yScale:ly,
+      yTicks:ticksBy(0,maxT,maxT/2,v=>v>=1000?(v/1000).toFixed(1)+"k":Math.round(v)),
+      xTicks:lags.map(l=>({v:l,label:l})), yGrid:true,
+      yTitle:"IMPLIED TIMESCALE (FRAMES)", yTitleDx:42,
+      xTitle:"LAG τ (FRAMES, LOG SCALE)", xTitleDy:28});
+    const xt=lx(tau);
+    svg.appendChild(S("line",{x1:xt,y1:padT,x2:xt,y2:padT+ih,stroke:"var(--baseline)","stroke-width":1,"stroke-dasharray":"3 2"}));
+    svg.appendChild(T(xt,padT+8,"τ=40","axlab","middle"));
+    for(let m=0;m<K-1;m++){ let d="";
+      lags.forEach((l,li)=>{ const t=TS[li][m]; if(t==null)return;
+        d+=(d?" L":"M")+lx(l).toFixed(1)+" "+ly(t).toFixed(1); });
+      if(d) svg.appendChild(S("path",{d,fill:"none",stroke:stateColor(m),"stroke-width":2,class:"st"+m}));
+      lags.forEach((l,li)=>{ const t=TS[li][m]; if(t==null)return;
+        const c=S("circle",{cx:lx(l),cy:ly(t),r:2.6,fill:stateColor(m),class:"st"+m,
+          stroke:"var(--surface)","stroke-width":1});
+        c.addEventListener("mouseenter",e=>showTT(`<div class="h">${s.label}</div><div class="row">lag τ<b>${l} fr</b></div><div class="row"><span class="dot" style="background:${stateColor(m)}"></span>timescale t<sub>${m+1}</sub><b>${Math.round(t).toLocaleString()} fr</b></div>`,e));
+        c.addEventListener("mouseleave",hideTT);
+        svg.appendChild(c); });
+      // direct label on the last point, so identity never rests on colour alone
+      for(let li=lags.length-1;li>=0;li--){ const t=TS[li][m];
+        if(t!=null){ const lb=T(lx(lags[li])-5,ly(t)-6,"t"+(m+1),"","end");
+          lb.setAttribute("fill",stateColor(m)); lb.setAttribute("font-size","9.5");
+          lb.setAttribute("font-weight","700"); svg.appendChild(lb); break; } }
+    }
+    fig.appendChild(svg);
+  });
+}
+
+// ============ Panel D: genealogy ============
+function renderGen(){
+  const host=document.getElementById("gen"); host.innerHTML="";
+  SYS.forEach(s=>{
+    const g=s.genealogy, nodes=g.nodes, edges=g.edges;
+    const fig=figFor(host,s,`${nodes.length} sims`);
+    const W=colW(fig), H=344, padL=40,padR=12,padT=18,padB=52;
+    const iw=W-padL-padR, ih=H-padT-padB;
+    const maxEp=Math.max(...nodes.map(n=>n.epoch));
+    // group by epoch, assign x within row by sim rank
+    const byEp={}; nodes.forEach(n=>{ (byEp[n.epoch]=byEp[n.epoch]||[]).push(n); });
+    let maxRank=1;
+    Object.keys(byEp).forEach(ep=>{ maxRank=Math.max(maxRank,byEp[ep].length); });
+    const pos={};
+    Object.keys(byEp).forEach(ep=>{ const arr=byEp[ep].sort((a,b)=>a.sim-b.sim);
+      arr.forEach((n,i)=>{ const x=padL+(arr.length===1?iw/2:iw*i/(arr.length-1));
+        const y=padT+ih*(n.epoch-1)/(maxEp-1); pos[n.id]={x,y,n}; }); });
+    const svg=svgEl(W,H);
+    // y runs down in epochs (time), x is the simulation's rank inside its epoch
+    const ys=e=>padT+ih*(e-1)/(maxEp-1);
+    const xs=r=>padL+(maxRank===1?iw/2:iw*(r-1)/(maxRank-1));
+    axisFrame(svg,{x:padL,y:padT,w:iw,h:ih,xScale:xs,yScale:ys,
+      yTicks:ticksBy(1,maxEp,3,v=>v),
+      xTicks:ticksBy(1,maxRank,maxRank>10?5:2,v=>v),
+      yTitle:"ADAPTIVE EPOCH (ROUND)", yTitleDx:32,
+      xTitle:"SIMULATION WITHIN EPOCH", xTitleDy:30, noXLine:true});
+    // edges
+    const eg=S("g",{});
+    edges.forEach(ed=>{ const a=pos[ed.source],b=pos[ed.target]; if(!a||!b)return;
+      const my=(a.y+b.y)/2;
+      eg.appendChild(S("path",{d:`M${a.x} ${a.y} C ${a.x} ${my}, ${b.x} ${my}, ${b.x} ${b.y}`,
+        fill:"none",stroke:"var(--accent)","stroke-width":.7,opacity:.28})); });
+    svg.appendChild(eg);
+    // nodes
+    nodes.forEach(n=>{ const p=pos[n.id]; if(!p)return;
+      const c=S("circle",{cx:p.x,cy:p.y,r:3.2,fill:stateColor(n.dom>=0?Math.min(n.dom,K-1):0),
+        class:"st"+(n.dom>=0?Math.min(n.dom,K-1):0),stroke:"var(--surface)","stroke-width":.8});
+      c.addEventListener("mouseenter",e=>{hl(Math.min(n.dom,K-1));
+        showTT(`<div class="h">sim ${n.id}</div><div class="row">epoch<b>${n.epoch}</b></div><div class="row">length<b>${n.len} fr</b></div><div class="row"><span class="dot" style="background:${stateColor(Math.min(n.dom,K-1))}"></span>mostly state<b>${n.dom}</b></div>`,e);});
+      c.addEventListener("mousemove",e=>showTT(tt.innerHTML,e));
+      c.addEventListener("mouseleave",()=>{hl(null);hideTT();});
+      svg.appendChild(c); });
+    // first-discovery markers: where adaptive sampling first reached each state
+    const disc=g.discovery||{};
+    Object.keys(disc).sort().forEach(st=>{ const p=pos[disc[st].node]; if(!p)return;
+      const above=p.y>padT+18, ly=above?p.y-11:p.y+16, lx=p.x;
+      const bg=S("rect",{x:lx-15,y:ly-9,width:30,height:13,rx:3,fill:"var(--surface)",stroke:stateColor(+st),"stroke-width":1,opacity:.95});
+      svg.appendChild(bg);
+      const lab=T(lx,ly+1,`1st S${st}`,"",'middle'); lab.setAttribute("font-size","9");
+      lab.setAttribute("fill",stateColor(+st)); lab.setAttribute("font-weight","700"); svg.appendChild(lab);
+      const ring=S("circle",{cx:p.x,cy:p.y,r:6.5,fill:"none",stroke:stateColor(+st),"stroke-width":2});
+      svg.appendChild(ring);
+      ring.addEventListener("mouseenter",e=>showTT(`<div class="h">first discovery of state ${st}</div><div class="row">sim<b>${disc[st].node}</b></div><div class="row">epoch<b>${p.n.epoch}</b></div><div class="row">global time<b>${disc[st].gtime} fr</b></div>`,e));
+      ring.addEventListener("mousemove",e=>showTT(tt.innerHTML,e)); ring.addEventListener("mouseleave",hideTT); });
+    fig.appendChild(svg);
+  });
+}
+
+// ============ Panel E: strips (canvas) ============
+function renderStrips(){
+  const host=document.getElementById("strips"); host.innerHTML="";
+  const dpr=Math.min(2,window.devicePixelRatio||1);
+  SYS.forEach(s=>{
+    const p=s.params[K], strips=p.strips, nb=DATA.meta.nStripBins, maxT=p.maxTime;
+    const fig=figFor(host,s,`${strips.length} rows`);
+    const W=colW(fig), H=Math.min(260, Math.max(150, strips.length*0.7));
+    const cv=document.createElement("canvas"); cv.width=W*dpr; cv.height=H*dpr;
+    cv.style.width="100%"; cv.style.height=H+"px";
+    const ctx=cv.getContext("2d"); ctx.scale(dpr,dpr);
+    const rowH=H/strips.length;
+    const cols={}; for(let k=0;k<K;k++) cols[k]=stateColor(k);
+    strips.forEach((tr,ri)=>{
+      const y=ri*rowH;
+      let binStart=0;
+      // reconstruct binned track from rle
+      const localToX = f => ALIGN==="global" ? ((tr.t0+f)/maxT)*W : (f/tr.len)*W;
+      tr.rle.forEach(run=>{ const st=run[0], rb=run[1];
+        const f0=binStart*tr.len/nb, f1=(binStart+rb)*tr.len/nb;
+        const x0=localToX(f0), x1=localToX(f1);
+        ctx.fillStyle=cols[Math.min(st,K-1)];
+        ctx.fillRect(x0, y, Math.max(0.5,x1-x0), Math.max(0.5,rowH-0.3));
+        binStart+=rb; });
+    });
+    // y axis is the trajectory index, x axis is time; both are named around the canvas
+    const wrap=document.createElement("div"); wrap.className="cvwrap";
+    const yt=document.createElement("div"); yt.className="ytitle";
+    yt.textContent=`SIMULATION 1 → ${strips.length}`;
+    const body=document.createElement("div"); body.className="cvbody";
+    body.appendChild(cv);
+    const axsvg=svgEl(W,32);
+    const tmax = ALIGN==="global" ? maxT : 100;
+    const xs=v=>(v/tmax)*W;
+    axisFrame(axsvg,{x:0,y:0,w:W,h:0,xScale:xs,yScale:v=>0,
+      xTicks:ALIGN==="global"?autoTicks(0,maxT,4,v=>Math.round(v))
+                             :ticksBy(0,100,25,v=>v+"%"),
+      xTitle:ALIGN==="global"?"GLOBAL TIME (FRAMES), ROWS ORDERED BY START TIME"
+                             :"POSITION WITHIN EACH TRAJECTORY (% OF ITS OWN LENGTH)",
+      xTitleDy:26, noYLine:true});
+    body.appendChild(axsvg);
+    wrap.appendChild(yt); wrap.appendChild(body); fig.appendChild(wrap);
+    // hover
+    cv.addEventListener("mousemove",e=>{ const r=cv.getBoundingClientRect();
+      const ri=Math.floor((e.clientY-r.top)/r.height*strips.length);
+      const tr=strips[ri]; if(!tr)return;
+      showTT(`<div class="h">sim ${tr.n}</div><div class="row">start<b>t=${tr.t0}</b></div><div class="row">length<b>${tr.len} fr</b></div><div class="row"><span class="dot" style="background:${stateColor(Math.min(tr.dom,K-1))}"></span>mostly state<b>${tr.dom}</b></div>`,e); });
+    cv.addEventListener("mouseleave",hideTT);
+  });
+}
+
+// ---- orchestration ----
+// ============ T3 helpers ============
+const CHARGED = new Set(["D","E","R","K"]);
+function contactMatrix(vec){
+  const M=Array.from({length:NRES},()=>new Float64Array(NRES));
+  for(let k=0;k<IU[0].length;k++){ const i=IU[0][k],j=IU[1][k],v=vec[k]; M[i][j]=v; M[j][i]=v; }
+  return M;
+}
+function stExists(sys,Y){ return sys && sys.params && sys.params[Y]; }
+
+// ============ Panel 6: contact maps ============
+function renderCmaps(){
+  const host=document.getElementById("cmaps"); host.innerHTML="";
+  const sys=SST[SYSSEL]; if(!stExists(sys,K)){host.innerHTML="";return;}
+  const P=sys.params[K], seq=sys.seq;
+  const gmean=P.gmeanContact;
+  const stateKeys=Object.keys(P.states).sort((a,b)=>+a-+b);
+  // enrichment scale
+  let maxE=0;
+  if(CMODE==="enr") stateKeys.forEach(s=>{ const c=P.states[s].contact;
+    for(let k=0;k<c.length;k++) maxE=Math.max(maxE,Math.abs(c[k]-gmean[k])); });
+  const dpr=Math.min(2,devicePixelRatio||1);
+  // numbered colour key for whichever encoding is showing
+  const kh=document.getElementById("cmapkey"); kh.innerHTML="";
+  if(CMODE==="enr") divKey(kh,"enrichment vs ensemble average (percentage points)",
+      [`&minus;${(maxE*100).toFixed(0)}`,"0",`+${(maxE*100).toFixed(0)}`],maxE,180);
+  else seqKey(kh,"contact frequency (% of frames within 4.5 Å)",["0","50%","100%"],180);
+  stateKeys.forEach(s=>{
+    const v=P.states[s];
+    const fig=figFor(host,{label:`State ${s}`},`${v.n} fr`);
+    // state colour chip in caption
+    fig.querySelector(".name").insertAdjacentHTML("afterbegin",
+      `<span class="dot" style="background:${stateColor(Math.min(+s,K-1))};width:9px;height:9px;border-radius:50%;margin-right:6px;vertical-align:-1px"></span>`);
+    const W=colW(fig), padL=32, padT=4, padB=38, padR=4;
+    const side=W-padL-padR, cell=side/NRES, H=padT+side+padB;
+    const cv=document.createElement("canvas"); cv.width=W*dpr; cv.height=H*dpr;
+    cv.style.width="100%"; cv.style.height="auto";
+    const ctx=cv.getContext("2d"); ctx.scale(dpr,dpr);
+    const M=contactMatrix(v.contact), G=CMODE==="enr"?contactMatrix(gmean):null;
+    for(let i=0;i<NRES;i++)for(let j=0;j<NRES;j++){
+      let col;
+      if(CMODE==="enr"){ col = i===j? stateColorHex("--surface-2") : divColor(M[i][j]-G[i][j],maxE); }
+      else { col = i===j? seqColor(1) : seqColor(M[i][j]); }
+      ctx.fillStyle=col; ctx.fillRect(padL+j*cell, padT+i*cell, Math.ceil(cell), Math.ceil(cell));
+    }
+    // both axes are the same residue index: tick and name each one
+    const MUT=stateColorHex("--muted"), BASE=stateColorHex("--baseline"), INK2=stateColorHex("--ink-2");
+    ctx.strokeStyle=BASE; ctx.lineWidth=1;
+    ctx.beginPath();
+    ctx.moveTo(padL-0.5,padT); ctx.lineTo(padL-0.5,padT+side);
+    ctx.moveTo(padL,padT+side+0.5); ctx.lineTo(padL+side,padT+side+0.5);
+    ctx.stroke();
+    ctx.fillStyle=MUT; ctx.font="9px ui-monospace,monospace";
+    for(const t of [1,10,20,30,40]){
+      const p=(t-0.5)*cell;
+      ctx.textAlign="right"; ctx.fillText(t, padL-5, padT+p+3);
+      ctx.beginPath(); ctx.moveTo(padL-4,padT+p); ctx.lineTo(padL,padT+p); ctx.stroke();
+      ctx.textAlign="center"; ctx.fillText(t, padL+p, padT+side+13);
+      ctx.beginPath(); ctx.moveTo(padL+p,padT+side); ctx.lineTo(padL+p,padT+side+4); ctx.stroke();
+    }
+    ctx.fillStyle=INK2; ctx.font="600 9.5px ui-monospace,monospace"; ctx.textAlign="center";
+    ctx.fillText("RESIDUE j", padL+side/2, padT+side+30);
+    ctx.save(); ctx.translate(11,padT+side/2); ctx.rotate(-Math.PI/2);
+    ctx.fillText("RESIDUE i", 0, 0); ctx.restore();
+    cv.addEventListener("mousemove",e=>{ const r=cv.getBoundingClientRect();
+      const sc=W/r.width; const j=Math.floor(((e.clientX-r.left)*sc-padL)/cell);
+      const i=Math.floor(((e.clientY-r.top)*sc-padT)/cell);
+      if(i<0||j<0||i>=NRES||j>=NRES){hideTT();return;}
+      const val=M[i][j], g=G?G[i][j]:null;
+      showTT(`<div class="h">State ${s} · contact</div><div class="row">${seq[i]}${i+1} ↔ ${seq[j]}${j+1}<b>${(val*100).toFixed(0)}%</b></div>`+(g!==null?`<div class="row">ensemble<b>${(g*100).toFixed(0)}%</b></div><div class="row">enrichment<b>${(val-g>=0?"+":"")+((val-g)*100).toFixed(0)}%</b></div>`:""),e); });
+    cv.addEventListener("mouseleave",hideTT);
+    fig.appendChild(cv);
+  });
+}
+
+// ============ Panel 7: drug binding ============
+// Abeta42 aggregation-relevant regions for band overlays (merged for clarity, 1-indexed)
+const REGIONS_DISP=[
+  {name:"N-term", a:1,  b:15, c:"#9aa3b2"},
+  {name:"KLVFF / CHC", a:16, b:21, c:stateColorHex("--div-neg")},
+  {name:"turn D23-K28", a:22, b:28, c:"#7a5cf0"},
+  {name:"C-term (hydrophobic)", a:30, b:42, c:stateColorHex("--s1")},
+];
+function drawRegionBands(svg, padL, cw, y, h){
+  REGIONS_DISP.forEach(r=>{ const x=padL+(r.a-1)*cw, w=(r.b-r.a+1)*cw;
+    svg.appendChild(S("rect",{x,y,width:w,height:h,fill:r.c,opacity:.9,rx:1})); });
+}
+// The region ruler appears on both sequence panels (7 and 11), so both get the key.
+function renderRegionKey(id){
+  const host=document.getElementById(id); if(!host)return; host.innerHTML="";
+  const t=document.createElement("span"); t.className="ct"; t.textContent="sequence regions";
+  host.appendChild(t);
+  REGIONS_DISP.forEach(r=>{ const s=document.createElement("span"); s.className="citem";
+    s.innerHTML=`<span class="cswatch" style="background:${r.c}"></span>${r.name} (${r.a}-${r.b})`;
+    host.appendChild(s); });
+}
+function sst2Sys(i){ return SST2 && SST2[i] && SST2[i].params && SST2[i].params[K] ? SST2[i] : null; }
+
+// ============ Panel 7: drug binding (specific vs observed) ============
+function renderDrugmaps(){
+  const host=document.getElementById("drugmaps"); host.innerHTML="";
+  const idxs=[1,2].filter(i=>sst2Sys(i) && SST2[i].drug);
+  const valOf=(v,i)=> DRUGMODE==="spec" ? Math.max(0,(v.drug[i]-(v.drugNull?v.drugNull[i]:0))) : v.drug[i];
+  let maxF=1e-6;
+  idxs.forEach(i=>{ const st=SST2[i].params[K].states;
+    Object.values(st).forEach(v=>{ if(v.drug) for(let r=0;r<NRES;r++) maxF=Math.max(maxF,valOf(v,r)); }); });
+  // the blue shades now carry their numbers
+  const kh=document.getElementById("drugkey"); kh.innerHTML="";
+  seqKey(kh, DRUGMODE==="spec"?"specific contact, above chance (% of frames)"
+                              :"observed contact (% of frames)",
+    ["0",`${(maxF*50).toFixed(0)}%`,`${(maxF*100).toFixed(0)}%`],180);
+  idxs.forEach(si=>{
+    const sys=SST2[si], P=sys.params[K], seq=sys.seq;
+    const fig=figFor(host,{label:sys.label}, DRUGMODE==="spec"?"above chance":"raw contact");
+    const stateKeys=Object.keys(P.states).sort((a,b)=>+a-+b);
+    const W=colW(fig), padL=54, padB=54, padT=26, rh=Math.min(30,W/NRES*3);
+    const iw=W-padL-8, cw=iw/NRES, H=padT+stateKeys.length*rh+padB;
+    const ih=stateKeys.length*rh;
+    const svg=svgEl(W,H);
+    drawRegionBands(svg, padL, cw, 10, 5);   // region ruler on top
+    svg.appendChild(T(padL,6,"AGGREGATION-CRITICAL REGIONS","axlab"));
+    stateKeys.forEach((s,ri)=>{
+      const v=P.states[s], y=padT+ri*rh;
+      svg.appendChild(S("circle",{cx:padL-30,cy:y+rh/2,r:4,fill:stateColor(Math.min(+s,K-1)),class:"st"+Math.min(+s,K-1)}));
+      const sl=T(padL-21,y+rh/2+3.5,"S"+s,"","start"); sl.setAttribute("fill",stateColor(Math.min(+s,K-1)));
+      sl.setAttribute("font-size","10"); sl.setAttribute("font-weight","700"); svg.appendChild(sl);
+      for(let i=0;i<NRES;i++){ const val=valOf(v,i);
+        const rc=S("rect",{x:padL+i*cw,y:y+1,width:Math.ceil(cw),height:rh-2,fill:seqColor(val/maxF)});
+        rc.addEventListener("mouseenter",e=>{hl(Math.min(+s,K-1));
+          showTT(`<div class="h">${sys.label} · state ${s}</div><div class="row">${seq[i]}${i+1}<b>${(v.drug[i]*100).toFixed(0)}%</b></div>`+(v.drugNull?`<div class="row">by chance<b>${(v.drugNull[i]*100).toFixed(0)}%</b></div><div class="row">specific<b>${(Math.max(0,v.drug[i]-v.drugNull[i])*100).toFixed(0)}%</b></div>`:""),e);});
+        rc.addEventListener("mousemove",e=>showTT(tt.innerHTML,e));
+        rc.addEventListener("mouseleave",()=>{hl(null);hideTT();});
+        svg.appendChild(rc);
+      }
+    });
+    // x axis: the Abeta42 sequence, one-letter code above the residue number
+    const yb=padT+ih+11;
+    for(let i=0;i<NRES;i++){ const t=T(padL+i*cw+cw/2, yb, seq[i], CHARGED.has(seq[i])?"charged":"axlab","middle");
+      t.setAttribute("font-size","8"); svg.appendChild(t);
+      if(i%5===4||i===0){ svg.appendChild(T(padL+i*cw+cw/2, yb+11, i+1, "axlab","middle"));
+        svg.appendChild(S("line",{x1:padL+i*cw+cw/2,y1:padT+ih,x2:padL+i*cw+cw/2,y2:padT+ih+3,class:"base"})); } }
+    svg.appendChild(S("line",{x1:padL,y1:padT+ih,x2:padL+iw,y2:padT+ih,class:"base"}));
+    svg.appendChild(S("line",{x1:padL,y1:padT,x2:padL,y2:padT+ih,class:"base"}));
+    svg.appendChild(T(padL+iw/2,yb+30,"Aβ42 RESIDUE (1 → 42, N-TERMINUS TO C-TERMINUS)","axtitle","middle"));
+    const yt=T(0,0,"MARKOV STATE","axtitle","middle");
+    yt.setAttribute("transform",`translate(${padL-40} ${padT+ih/2}) rotate(-90)`);
+    svg.appendChild(yt);
+    fig.appendChild(svg);
+  });
+}
+
+// ============ Panel 8: the binding pocket ============
+// The centrepiece the expert review asked for: not "which residues bind" as a chart,
+// but the ligand sitting on the peptide. The peptide is drawn as a Ca tube whose
+// thickness and colour carry each residue's drug-contact frequency over the whole
+// state, with the single best-contacting pose's ligand drawn in place on top.
+const ELEMCOL={C:"--ink-2", O:"--div-neg", N:"--s0", S:"--s2", P:"--s1", H:"--muted"};
+function elemColor(e){ return stateColorHex(ELEMCOL[e]||"--ink-2"); }
+function pocketSys(si){ // SYS index (1=TMP, 2=SPA) -> pocket record
+  if(!window.POCKET||!POCKET.systems) return null;
+  const want=["zsab2","zsab3","zsab4"][si];
+  return POCKET.systems.find(p=>p.id===want)||null;
+}
+function contactTint(t){ return mix(stateColorHex("--baseline"), stateColorHex("--div-neg"),
+  Math.max(0,Math.min(1,t))); }
+function renderPockets(){
+  const host=document.getElementById("pockets"); if(!host) return; host.innerHTML="";
+  const kh=document.getElementById("pocketkey"); kh.innerHTML="";
+  const avail=[1,2].map(pocketSys).filter(Boolean);
+  if(!avail.length){ host.innerHTML=`<p class="pdesc">No ligand-pose data in this build.</p>`; return; }
+  colourKey(kh,{title:"drug contact frequency along the backbone",
+    css:rampCss(t=>contactTint(t),10), labels:["never","","most contacted"], width:170,
+    extra:["<b style='font-weight:600'>ligand atoms:</b>"].concat(
+      ["C","N","O","S"].map(e=>`<span class="cswatch" style="border-radius:50%;width:10px;height:10px;background:${elemColor(e)}"></span>${e}`),
+      [`<span class="cswatch" style="background:var(--grid);border:1px solid var(--border)"></span>pocket lining atoms (within ${(POCKET.meta&&POCKET.meta.pocketCutoff)||8} Å)`])});
+  const dpr=Math.min(2,devicePixelRatio||1);
+  avail.forEach(ps=>{
+    const P=ps.params[String(K)]; if(!P) return;
+    const stateKeys=Object.keys(P.states).sort((a,b)=>+a-+b);
+    const row=document.createElement("div"); row.className="prow";
+    const nBoundTot=stateKeys.reduce((a,s)=>a+P.states[s].nBound,0);
+    row.innerHTML=`<div class="prowhead"><span class="nm">${ps.label}</span>
+      <span class="mt">${ps.drug} · ${ps.nDrugCopies} copies in box · ${nBoundTot.toLocaleString()} bound frames</span></div>`;
+    const cols=document.createElement("div"); cols.className="cols";
+    row.appendChild(cols); host.appendChild(row);
+    stateKeys.forEach(s=>{
+      const v=P.states[s], cf=v.contactFreq, pose=v.poses&&v.poses[0];
+      const fig=figFor(cols,{label:`State ${s}`},`${v.nBound.toLocaleString()} bound fr`);
+      fig.querySelector(".name").insertAdjacentHTML("afterbegin",
+        `<span class="dot" style="background:${stateColor(Math.min(+s,K-1))};width:9px;height:9px;border-radius:50%;margin-right:6px;vertical-align:-1px"></span>`);
+      const W=colW(fig), H=224;
+      const cv=document.createElement("canvas"); cv.className="cbar";
+      cv.width=W*dpr; cv.height=H*dpr; cv.style.width="100%"; cv.style.height=H+"px";
+      const ctx=cv.getContext("2d");
+      const maxCF=Math.max(1e-6,...cf);
+      const ca=pose?pose.ca:v.ref;
+      function draw(){
+        ctx.setTransform(dpr,0,0,dpr,0,0); ctx.clearRect(0,0,W,H);
+        if(!ca||!ca.length){ ctx.fillStyle=stateColorHex("--muted"); ctx.font="12px system-ui";
+          ctx.textAlign="center"; ctx.fillText("no data",W/2,H/2); return; }
+        const R=p=>rot3(p,ROT.ax,ROT.ay);
+        const CA=ca.map(R);
+        const DR=(POCKETMODE==="pose"&&pose)?pose.drug.map(R):[];
+        const PK=(POCKETMODE==="pose"&&pose)?pose.pocket.map(R):[];
+        const CL=(POCKETMODE==="cloud")?(v.cloud||[]).map(R):[];
+        const all=CA.concat(DR,PK,CL);
+        const xr=[Math.min(...all.map(p=>p[0])),Math.max(...all.map(p=>p[0]))];
+        const yr=[Math.min(...all.map(p=>p[1])),Math.max(...all.map(p=>p[1]))];
+        const zr=[Math.min(...all.map(p=>p[2])),Math.max(...all.map(p=>p[2]))];
+        const pad=22, sc=Math.min((W-2*pad)/((xr[1]-xr[0])||1),(H-2*pad)/((yr[1]-yr[0])||1));
+        const ox=(W-(xr[1]+xr[0])*sc)/2, oy=(H-(yr[1]+yr[0])*sc)/2;
+        const px=p=>[ox+p[0]*sc, oy+p[1]*sc, (p[2]-zr[0])/((zr[1]-zr[0])||1)];
+        // pocket lining, recessive
+        ctx.fillStyle=stateColorHex("--grid");
+        PK.forEach(p=>{ const q=px(p); ctx.globalAlpha=0.35+0.4*q[2];
+          ctx.beginPath(); ctx.arc(q[0],q[1],1.7,0,7); ctx.fill(); });
+        ctx.globalAlpha=1;
+        // backbone, thickness + colour = how often this residue touches the ligand
+        const Q=CA.map(px);
+        ctx.lineCap="round"; ctx.lineJoin="round";
+        for(let i=0;i<Q.length-1;i++){
+          const t=(cf[i]+cf[i+1])/2/maxCF, z=(Q[i][2]+Q[i+1][2])/2;
+          ctx.strokeStyle=contactTint(t);
+          ctx.globalAlpha=0.55+0.45*z;
+          ctx.lineWidth=(1.3+3.4*t)*(0.75+0.5*z);
+          ctx.beginPath(); ctx.moveTo(Q[i][0],Q[i][1]); ctx.lineTo(Q[i+1][0],Q[i+1][1]); ctx.stroke();
+        }
+        ctx.globalAlpha=1;
+        // termini
+        ctx.font="bold 10px ui-monospace,monospace"; ctx.textAlign="center";
+        ctx.fillStyle=stateColorHex("--ink-2");
+        ctx.fillText("N",Q[0][0],Q[0][1]-7); ctx.fillText("C",Q[Q.length-1][0],Q[Q.length-1][1]-7);
+        if(POCKETMODE==="cloud"){
+          // every bound ligand position, superposed into this state's frame
+          const col=stateColor(Math.min(+s,K-1));
+          CL.forEach(p=>{ const q=px(p); ctx.globalAlpha=0.12+0.22*q[2];
+            ctx.fillStyle=col; ctx.beginPath(); ctx.arc(q[0],q[1],2.6,0,7); ctx.fill(); });
+          ctx.globalAlpha=1;
+        } else if(pose){
+          // the ligand itself: bonds then atoms, depth sorted
+          const D=DR.map(px);
+          ctx.strokeStyle=stateColorHex("--ink-2"); ctx.lineWidth=2.2; ctx.globalAlpha=.75;
+          for(let i=0;i<pose.drug.length;i++) for(let j=i+1;j<pose.drug.length;j++){
+            const a=pose.drug[i],b=pose.drug[j];
+            const d=Math.hypot(a[0]-b[0],a[1]-b[1],a[2]-b[2]);
+            if(d<2.05){ ctx.beginPath(); ctx.moveTo(D[i][0],D[i][1]); ctx.lineTo(D[j][0],D[j][1]); ctx.stroke(); } }
+          ctx.globalAlpha=1;
+          D.map((q,i)=>[q,i]).sort((a,b)=>a[0][2]-b[0][2]).forEach(([q,i])=>{
+            ctx.beginPath(); ctx.arc(q[0],q[1],3.4+1.4*q[2],0,7);
+            ctx.fillStyle=elemColor(ps.drugElems[i]); ctx.fill();
+            ctx.lineWidth=1.1; ctx.strokeStyle=stateColorHex("--surface"); ctx.stroke(); });
+          // name the residues actually touching this pose
+          const top=cf.map((x,i)=>[i,x]).sort((a,b)=>b[1]-a[1]).slice(0,4).map(a=>a[0]);
+          ctx.font="700 9.5px ui-monospace,monospace"; ctx.textAlign="left";
+          top.forEach(i=>{ const q=Q[i];
+            const lab=ps.seq[i]+(i+1);
+            ctx.lineWidth=3; ctx.strokeStyle=stateColorHex("--surface");
+            ctx.strokeText(lab,q[0]+6,q[1]+3); ctx.fillStyle=stateColorHex("--div-neg");
+            ctx.fillText(lab,q[0]+6,q[1]+3); });
+        }
+        // explicit length scale, since a 3D view has no axes
+        const bar=10*sc, bx0=W-14-bar, by0=H-11;
+        ctx.strokeStyle=stateColorHex("--ink-2"); ctx.lineWidth=1.4;
+        ctx.beginPath(); ctx.moveTo(bx0,by0); ctx.lineTo(bx0+bar,by0);
+        ctx.moveTo(bx0,by0-3); ctx.lineTo(bx0,by0+3);
+        ctx.moveTo(bx0+bar,by0-3); ctx.lineTo(bx0+bar,by0+3); ctx.stroke();
+        ctx.fillStyle=stateColorHex("--ink-2"); ctx.font="9px ui-monospace,monospace";
+        ctx.textAlign="center"; ctx.fillText("10 Å",bx0+bar/2,by0-6);
+      }
+      cv._draw=draw; draw();
+      fig.appendChild(cv);
+      // the numbers behind the picture
+      const rl=document.createElement("div"); rl.className="reslist";
+      const top=cf.map((x,i)=>[i,x]).sort((a,b)=>b[1]-a[1]).slice(0,6);
+      rl.innerHTML=`<b>most contacted:</b> `+top.map(([i,x])=>
+        `<span class="respill">${ps.seq[i]}${i+1} ${(x*100).toFixed(0)}%</span>`).join("");
+      if(pose) rl.innerHTML+=`<span class="respill" style="border-style:dashed">pose: ${pose.nContacts} residues, closest ${pose.minDist} Å</span>`;
+      fig.appendChild(rl);
+    });
+  });
+}
+let dragPK=null;
+document.getElementById("pockets").addEventListener("pointerdown",e=>{ if(e.target.tagName==="CANVAS"){
+  dragPK={x:e.clientX,y:e.clientY}; e.target.setPointerCapture(e.pointerId); }});
+window.addEventListener("pointermove",e=>{ if(!dragPK)return;
+  ROT.ay+=(e.clientX-dragPK.x)*0.01; ROT.ax+=(e.clientY-dragPK.y)*0.01; dragPK={x:e.clientX,y:e.clientY};
+  document.querySelectorAll("#pockets canvas,#backbones canvas").forEach(c=>c._draw&&c._draw()); });
+window.addEventListener("pointerup",()=>{dragPK=null;});
+
+// ============ Panel 9: ensemble 3D backbones ============
+function rot3(p,ax,ay){ const x=p[0],y=p[1],z=p[2];
+  const cy=Math.cos(ax),sy=Math.sin(ax), y1=y*cy-z*sy, z1=y*sy+z*cy;
+  const cx=Math.cos(ay),sx=Math.sin(ay), x2=x*cx+z1*sx, z2=-x*sx+z1*cx;
+  return [x2,y1,z2]; }
+function renderBackbones(){
+  const host=document.getElementById("backbones"); host.innerHTML="";
+  const sys=sst2Sys(SYSSEL); if(!sys){return;}
+  const P=sys.params[K], seq=sys.seq;
+  const stateKeys=Object.keys(P.states).sort((a,b)=>+a-+b);
+  const dpr=Math.min(2,devicePixelRatio||1);
+  const cN=stateColorHex("--s0"), cC=stateColorHex("--s2");
+  stateKeys.forEach(s=>{
+    const v=P.states[s], ens=v.ensemble||[];
+    const rmsfMean=v.rmsf?(v.rmsf.reduce((a,b)=>a+b,0)/v.rmsf.length):0;
+    const fig=figFor(host,{label:`State ${s}`},`Rg ${v.rgMean}Å · flex ${rmsfMean.toFixed(1)}Å`);
+    fig.querySelector(".name").insertAdjacentHTML("afterbegin",
+      `<span class="dot" style="background:${stateColor(Math.min(+s,K-1))};width:9px;height:9px;border-radius:50%;margin-right:6px;vertical-align:-1px"></span>`);
+    const W=colW(fig), H=200;
+    const cv=document.createElement("canvas"); cv.className="cbar";
+    cv.width=W*dpr; cv.height=H*dpr; cv.style.width="100%"; cv.style.height=H+"px";
+    const ctx=cv.getContext("2d");
+    let beads=[];
+    if(v.drug){ const spec=v.drug.map((x,i)=>[i, x-(v.drugNull?v.drugNull[i]:0)]);
+      beads=spec.filter(a=>a[1]>0.1).sort((a,b)=>b[1]-a[1]).slice(0,6).map(a=>a[0]); }
+    function draw(){
+      ctx.setTransform(dpr,0,0,dpr,0,0); ctx.clearRect(0,0,W,H);
+      if(!ens.length){ ctx.fillStyle=stateColorHex("--muted"); ctx.font="12px system-ui";
+        ctx.textAlign="center"; ctx.fillText("no data",W/2,H/2); return; }
+      // rotate all frames, shared bounds
+      const rot=ens.map(fr=>fr.map(p=>rot3(p,ROT.ax,ROT.ay)));
+      let all=[].concat(...rot);
+      const minx=Math.min(...all.map(p=>p[0])),maxx=Math.max(...all.map(p=>p[0]));
+      const miny=Math.min(...all.map(p=>p[1])),maxy=Math.max(...all.map(p=>p[1]));
+      const zmin=Math.min(...all.map(p=>p[2])),zmax=Math.max(...all.map(p=>p[2]));
+      const pad=18, sc=Math.min((W-2*pad)/(maxx-minx||1),(H-2*pad)/(maxy-miny||1));
+      const ox=(W-(maxx+minx)*sc)/2, oy=(H-(maxy+miny)*sc)/2;
+      const px=fr=>fr.map(p=>[ox+p[0]*sc, oy+p[1]*sc, (p[2]-zmin)/((zmax-zmin)||1)]);
+      rot.forEach((fr,fi)=>{ const PX=px(fr); const lead=(fi===0);
+        for(let i=0;i<PX.length-1;i++){ const z=(PX[i][2]+PX[i+1][2])/2;
+          ctx.strokeStyle=mix(cN,cC,i/(PX.length-1));
+          ctx.globalAlpha=lead?(0.55+0.45*z):(0.13+0.12*z);
+          ctx.lineWidth=lead?(1.4+2.6*z):(0.8+1.2*z); ctx.lineCap="round";
+          ctx.beginPath(); ctx.moveTo(PX[i][0],PX[i][1]); ctx.lineTo(PX[i+1][0],PX[i+1][1]); ctx.stroke(); }
+        if(lead){ ctx.globalAlpha=1;
+          beads.forEach(bi=>{ const p=PX[bi]; ctx.beginPath(); ctx.arc(p[0],p[1],4.5,0,7);
+            ctx.fillStyle=stateColorHex("--div-neg"); ctx.globalAlpha=0.5+0.5*p[2]; ctx.fill();
+            ctx.globalAlpha=1; ctx.lineWidth=1; ctx.strokeStyle=stateColorHex("--surface"); ctx.stroke(); });
+          ctx.fillStyle=cN; ctx.font="bold 10px ui-monospace,monospace"; ctx.textAlign="center";
+          ctx.fillText("N",PX[0][0],PX[0][1]-7); ctx.fillStyle=cC; ctx.fillText("C",PX[41][0],PX[41][1]-7); }
+      });
+      ctx.globalAlpha=1;
+      // a 3D view has no axes, so it carries an explicit length scale instead
+      const bar=10*sc, bx0=W-pad-bar, by0=H-12;
+      ctx.strokeStyle=stateColorHex("--ink-2"); ctx.lineWidth=1.4;
+      ctx.beginPath(); ctx.moveTo(bx0,by0); ctx.lineTo(bx0+bar,by0);
+      ctx.moveTo(bx0,by0-3); ctx.lineTo(bx0,by0+3);
+      ctx.moveTo(bx0+bar,by0-3); ctx.lineTo(bx0+bar,by0+3); ctx.stroke();
+      ctx.fillStyle=stateColorHex("--ink-2"); ctx.font="9px ui-monospace,monospace";
+      ctx.textAlign="center"; ctx.fillText("10 Å", bx0+bar/2, by0-6);
+    }
+    cv._draw=draw; draw();
+    fig.appendChild(cv);
+    if(beads.length){ const lg=document.createElement("div");
+      lg.style.cssText="font-family:var(--font-mono);font-size:10px;color:var(--ink-2);margin-top:6px;display:flex;align-items:center;gap:6px;flex-wrap:wrap";
+      lg.innerHTML=`<span style="width:8px;height:8px;border-radius:50%;background:var(--div-neg);display:inline-block"></span>drug site: `+beads.slice().sort((a,b)=>a-b).map(i=>seq[i]+(i+1)).join(" ");
+      fig.appendChild(lg); }
+  });
+}
+let dragBB=null;
+document.getElementById("backbones").addEventListener("pointerdown",e=>{ if(e.target.tagName==="CANVAS"){
+  dragBB={x:e.clientX,y:e.clientY}; e.target.setPointerCapture(e.pointerId); }});
+window.addEventListener("pointermove",e=>{ if(!dragBB)return;
+  ROT.ay+=(e.clientX-dragBB.x)*0.01; ROT.ax+=(e.clientY-dragBB.y)*0.01; dragBB={x:e.clientX,y:e.clientY};
+  document.querySelectorAll("#backbones canvas").forEach(c=>c._draw&&c._draw()); });
+window.addEventListener("pointerup",()=>{dragBB=null;});
+
+// ============ Panel 9: conformational landscape ============
+// Rebuilt in SVG (was canvas) so both axes carry real ticks and units, the colour
+// ramp carries a numbered free-energy scale, and a marginal Rg distribution sits on
+// top: the expert could not see the compactness difference between systems from the
+// 2D density alone, and the marginal makes that shift explicit.
+const FMAX=5;    // kT window of the free-energy ramp
+function renderLandscape(){
+  const host=document.getElementById("landscape"); host.innerHTML="";
+  const rgE=S2META.rgEdges, beE=S2META.betaEdges;
+  const nR=rgE.length-1;
+  // The beta axis is binned to 60% but the peptide almost never gets near that, so
+  // the plot was mostly empty. Crop to the bin holding 99.5% of the sampled mass (a
+  // handful of outlier frames should not set the scale), shared by all three systems
+  // so the maps stay directly comparable.
+  let nB=1;
+  {
+    const perB=new Array(beE.length-1).fill(0); let tot=0;
+    SYS.forEach((sd,si)=>{ const sys=sst2Sys(si); if(!sys) return;
+      const L=sys.params[K].landscape;
+      for(let r=0;r<nR;r++) for(let b=0;b<L[r].length;b++){ perB[b]+=L[r][b]; tot+=L[r][b]; } });
+    let acc=0;
+    for(let b=0;b<perB.length;b++){ acc+=perB[b]; nB=b+1; if(acc>=tot*0.995) break; }
+    nB=Math.min(beE.length-1, nB+1);
+  }
+  // colour key, shared by the three maps
+  const kh=document.getElementById("landkey"); kh.innerHTML="";
+  colourKey(kh,{title:"relative free energy, &minus;ln p (kT)",
+    css:rampCss(t=>seqColor(1-t),12), labels:["0 (most populated)","2.5",`≥${FMAX}`], width:190,
+    extra:[`<span class="cswatch" style="background:var(--surface-2)"></span>never visited`,
+           `<span style="width:13px;height:13px;border-radius:50%;border:2px solid var(--ink-2);display:inline-block;flex:none"></span>Markov state centre`,
+           `<span class="cline" style="border-top-color:var(--ink-2);border-top-style:dashed"></span>free peptide, for reference`]});
+  // marginal Rg distributions, on a scale shared by all three systems
+  const marg=SYS.map((sd,si)=>{ const sys=sst2Sys(si); if(!sys) return null;
+    const L=sys.params[K].landscape, m=new Array(nR).fill(0);
+    let tot=0; for(let r=0;r<nR;r++){ for(let b=0;b<nB;b++){ m[r]+=L[r][b]; } tot+=m[r]; }
+    return tot>0? m.map(v=>v/tot) : null; });
+  let mMax=1e-9; marg.forEach(m=>m&&m.forEach(v=>mMax=Math.max(mMax,v)));
+  const meanRg=SYS.map((sd,si)=>{ const m=marg[si]; if(!m) return null;
+    let s=0; for(let r=0;r<nR;r++) s+=m[r]*(rgE[r]+rgE[r+1])/2; return s; });
+  SYS.forEach((sd,si)=>{
+    const sys=sst2Sys(si); const fig=figFor(host,{label:sd.label},
+      meanRg[si]!=null?`mean Rg ${meanRg[si].toFixed(1)} Å`:"Rg vs beta");
+    if(!sys){return;}
+    const L=sys.params[K].landscape;
+    let mx=0; for(const row of L) for(const c of row) mx=Math.max(mx,c);
+    const W=colW(fig), padL=48,padR=10,padT=52,padB=50;
+    const iw=W-padL-padR, ih=Math.max(120,iw*0.72), H=padT+ih+padB;
+    const cw=iw/nR, chh=ih/nB;
+    const xs=v=>padL+(v-rgE[0])/(rgE[nR]-rgE[0])*iw;
+    const ys=v=>padT+ih-(v-beE[0])/(beE[nB]-beE[0])*ih;
+    const svg=svgEl(W,H);
+    // density cells: free energy relative to the most populated bin
+    for(let r=0;r<nR;r++)for(let b=0;b<nB;b++){ const c=L[r][b];
+      const fill = c>0 ? seqColor(1-Math.min(1,Math.log(mx/c)/FMAX)) : stateColorHex("--surface-2");
+      const rc=S("rect",{x:padL+r*cw,y:padT+(nB-1-b)*chh,width:Math.ceil(cw)+0.4,
+        height:Math.ceil(chh)+0.4,fill});
+      if(c>0){ const rg=((rgE[r]+rgE[r+1])/2).toFixed(1), be=(((beE[b]+beE[b+1])/2)*100).toFixed(0);
+        rc.addEventListener("mouseenter",e=>showTT(`<div class="h">${sd.label}</div><div class="row">Rg<b>${rg} Å</b></div><div class="row">β-content<b>${be}%</b></div><div class="row">frames<b>${c.toLocaleString()}</b></div><div class="row">free energy<b>${Math.log(mx/c).toFixed(1)} kT</b></div>`,e));
+        rc.addEventListener("mousemove",e=>showTT(tt.innerHTML,e));
+        rc.addEventListener("mouseleave",hideTT); }
+      svg.appendChild(rc); }
+    axisFrame(svg,{x:padL,y:padT,w:iw,h:ih,xScale:xs,yScale:ys,
+      xTicks:ticksBy(Math.ceil(rgE[0]/5)*5,rgE[nR],5,v=>v.toFixed(0)),
+      yTicks:ticksBy(0,beE[nB],0.1,v=>(v*100).toFixed(0)+"%"),
+      yTitle:"β-CONTENT (% OF RESIDUES)", yTitleDx:40,
+      xTitle:"RADIUS OF GYRATION Rg (Å), COMPACT → EXTENDED", xTitleDy:30});
+    // top marginal: how compactness itself is distributed
+    const mgB=padT-10, mgH=30, m=marg[si];
+    if(m){
+      const curve=arr=>{ let d="";
+        for(let r=0;r<nR;r++){ const x=xs((rgE[r]+rgE[r+1])/2), y=mgB-(arr[r]/mMax)*mgH;
+          d+=(r?" L":"M")+x.toFixed(1)+" "+y.toFixed(1); } return d; };
+      if(si>0 && marg[0]) svg.appendChild(S("path",{d:curve(marg[0]),fill:"none",
+        stroke:"var(--ink-2)","stroke-width":1.1,"stroke-dasharray":"3 2",opacity:.65}));
+      svg.appendChild(S("path",{d:curve(m)+` L${xs(rgE[nR])} ${mgB} L${xs(rgE[0])} ${mgB} Z`,
+        fill:stateColorHex("--accent"),"fill-opacity":.18,stroke:stateColorHex("--accent"),"stroke-width":1.6}));
+      svg.appendChild(S("line",{x1:padL,y1:mgB,x2:padL+iw,y2:mgB,class:"base"}));
+      svg.appendChild(T(padL,mgB-mgH-4,"DISTRIBUTION OF Rg","axtitle"));
+      const mx2=xs(meanRg[si]);
+      svg.appendChild(S("line",{x1:mx2,y1:mgB-mgH-2,x2:mx2,y2:padT+ih,stroke:stateColorHex("--accent"),
+        "stroke-width":1.2,"stroke-dasharray":"4 3",opacity:.8}));
+      svg.appendChild(T(mx2+4,mgB-mgH+6,`mean ${meanRg[si].toFixed(1)} Å`,"vlab"));
+    }
+    // Markov-state centres: the basins of the funnel. States can sit almost on top of
+    // one another (SPA collapses them), so labels fan out around the ring with a
+    // leader line instead of stacking at the same spot.
+    const P=sys.params[K].states;
+    const keys=Object.keys(P).sort((a,b)=>+a-+b);
+    keys.forEach((st,ki)=>{ const v=P[st];
+      const rx=xs(Math.min(Math.max(v.rgMean,rgE[0]),rgE[nR]));
+      const by=ys(Math.min(Math.max(v.betaMean,beE[0]),beE[nB]));
+      const col=stateColor(Math.min(+st,K-1));
+      let ang=(-90+ki*(360/Math.max(1,keys.length)))*Math.PI/180;
+      const R0=6, R1=17;
+      // keep the leader inside the plot box, mirroring rather than spilling past an axis
+      if(by+Math.sin(ang)*R1 > padT+ih-6 || by+Math.sin(ang)*R1 < padT+6) ang=-ang;
+      let lx=rx+Math.cos(ang)*R1;
+      if(lx<padL+12 || lx>padL+iw-12){ ang=Math.PI-ang; lx=rx+Math.cos(ang)*R1; }
+      lx=Math.max(padL+12,Math.min(padL+iw-12,lx));
+      const ly=Math.max(padT+8,Math.min(padT+ih-6, by+Math.sin(ang)*R1));
+      svg.appendChild(S("line",{x1:rx+Math.cos(ang)*R0,y1:by+Math.sin(ang)*R0,
+        x2:lx,y2:ly,stroke:col,"stroke-width":1,opacity:.7}));
+      const c=S("circle",{cx:rx,cy:by,r:R0,fill:"none",stroke:col,
+        "stroke-width":2.4,class:"st"+Math.min(+st,K-1)});
+      c.addEventListener("mouseenter",e=>showTT(`<div class="h">${sd.label} · state ${st}</div><div class="row">mean Rg<b>${v.rgMean} Å</b></div><div class="row">mean β-content<b>${(v.betaMean*100).toFixed(0)}%</b></div>`,e));
+      c.addEventListener("mouseleave",hideTT);
+      svg.appendChild(c);
+      const lb=T(lx,ly+3.4,"S"+st,"","middle"); lb.setAttribute("fill",col);
+      lb.setAttribute("font-size","10"); lb.setAttribute("font-weight","700");
+      lb.setAttribute("stroke",stateColorHex("--surface")); lb.setAttribute("stroke-width","3");
+      lb.setAttribute("paint-order","stroke"); svg.appendChild(lb); });
+    fig.appendChild(svg);
+  });
+}
+
+// ============ Panel 10: beta propensity per residue (ensemble avg, per system) ============
+function renderBeta(){
+  const host=document.getElementById("betamaps"); host.innerHTML="";
+  // ensemble-averaged beta per residue per system = sum_s occ_s * beta_s
+  const curves=SYS.map((sd,si)=>{ const sys=sst2Sys(si); if(!sys)return null;
+    const occ=sd.params[K].occupancy, P=sys.params[K].states, b=new Array(NRES).fill(0);
+    Object.keys(P).forEach(st=>{ const w=occ[+st]||0; const be=P[st].beta;
+      for(let i=0;i<NRES;i++) b[i]+=w*be[i]; }); return {seq:sys.seq,b}; });
+  let maxB=0.05; curves.forEach(c=>{ if(c) c.b.forEach(x=>maxB=Math.max(maxB,x)); });
+  SYS.forEach((sd,si)=>{
+    const c=curves[si]; const fig=figFor(host,{label:sd.label},"per residue");
+    if(!c){return;}
+    const W=colW(fig), padL=46,padR=8,padT=10,padB=72, iw=W-padL-padR, H=214, ih=H-padT-padB;
+    const cw=iw/NRES; const svg=svgEl(W,H);
+    const ys=v=>padT+ih-(v/maxB)*ih;
+    const xs=i=>padL+(i+0.5)*cw;
+    // shared y scale across the three systems, so the drug effect is a real height change
+    axisFrame(svg,{x:padL,y:padT,w:iw,h:ih,xScale:xs,yScale:ys,
+      yTicks:autoTicks(0,maxB,4,v=>(v*100).toFixed(0)+"%"), yGrid:true,
+      xTicks:[{v:0,label:"1"},{v:9,label:"10"},{v:19,label:"20"},{v:29,label:"30"},{v:41,label:"42"}],
+      yTitle:"% OF FRAMES IN β-STRAND", yTitleDx:40,
+      xTitle:"Aβ42 RESIDUE", xTitleDy:60});
+    drawRegionBands(svg, padL, cw, padT+ih+38, 5);
+    // area
+    let d="M"+padL+" "+(padT+ih);
+    for(let i=0;i<NRES;i++){ d+=` L${xs(i).toFixed(1)} ${ys(c.b[i]).toFixed(1)}`; }
+    d+=` L${padL+iw} ${padT+ih} Z`;
+    svg.appendChild(S("path",{d,fill:stateColorHex("--s2"),"fill-opacity":.55,stroke:stateColorHex("--s2"),"stroke-width":1.5}));
+    // residue letters + hover bars
+    for(let i=0;i<NRES;i++){ const x=padL+i*cw;
+      const hb=S("rect",{x,y:padT,width:Math.ceil(cw),height:ih,fill:"transparent"});
+      hb.addEventListener("mouseenter",e=>showTT(`<div class="h">${sd.label}</div><div class="row">${c.seq[i]}${i+1} β-strand<b>${(c.b[i]*100).toFixed(0)}%</b></div>`,e));
+      hb.addEventListener("mousemove",e=>showTT(tt.innerHTML,e)); hb.addEventListener("mouseleave",hideTT);
+      svg.appendChild(hb);
+      const t=T(x+cw/2,padT+ih+25,c.seq[i],CHARGED.has(c.seq[i])?"charged":"axlab","middle");
+      t.setAttribute("font-size","7.5"); svg.appendChild(t); }
+    fig.appendChild(svg);
+  });
+}
+
+function renderStruct(){ renderRegionKey("regionkey"); renderRegionKey("betaregionkey");
+  renderCmaps(); renderDrugmaps(); renderPockets(); renderBackbones(); renderLandscape(); renderBeta(); }
+
+function renderAll(){ resetThemeCache(); renderLegend(); renderOcc(); renderTemporal(); renderTrans(); renderITS(); renderGen(); renderStrips(); renderStruct(); }
+function renderData(){ resetThemeCache(); renderThesis(); renderOcc(); renderTemporal(); renderTrans(); renderITS(); renderGen(); renderStrips(); renderStruct(); }
+// re-render when the viewer's theme changes (OS preference or the page's data-theme)
+if(window.matchMedia){ const mq=window.matchMedia("(prefers-color-scheme: dark)");
+  (mq.addEventListener?mq.addEventListener.bind(mq,"change"):mq.addListener.bind(mq))(()=>{ renderData(); }); }
+new MutationObserver(()=>renderData()).observe(root,{attributes:true,attributeFilter:["data-theme"]});
+
+// controls
+document.getElementById("segK").addEventListener("click",e=>{ const b=e.target.closest("button"); if(!b)return;
+  K=+b.dataset.k; document.querySelectorAll("#segK button").forEach(x=>x.setAttribute("aria-pressed",x===b));
+  renderLegend(); renderData(); });
+document.getElementById("segAlign").addEventListener("click",e=>{ const b=e.target.closest("button"); if(!b)return;
+  ALIGN=b.dataset.a; document.querySelectorAll("#segAlign button").forEach(x=>x.setAttribute("aria-pressed",x===b));
+  renderStrips(); });
+document.getElementById("segMode").addEventListener("click",e=>{ const b=e.target.closest("button"); if(!b)return;
+  MODE=b.dataset.m; document.querySelectorAll("#segMode button").forEach(x=>x.setAttribute("aria-pressed",x===b));
+  renderTrans(); });
+
+document.getElementById("segSys").addEventListener("click",e=>{ const b=e.target.closest("button"); if(!b)return;
+  SYSSEL=+b.dataset.s; document.querySelectorAll("#segSys button").forEach(x=>x.setAttribute("aria-pressed",x===b));
+  renderCmaps(); renderBackbones(); });
+document.getElementById("segCMode").addEventListener("click",e=>{ const b=e.target.closest("button"); if(!b)return;
+  CMODE=b.dataset.m; document.querySelectorAll("#segCMode button").forEach(x=>x.setAttribute("aria-pressed",x===b));
+  renderCmaps(); });
+document.getElementById("segDrug").addEventListener("click",e=>{ const b=e.target.closest("button"); if(!b)return;
+  DRUGMODE=b.dataset.m; document.querySelectorAll("#segDrug button").forEach(x=>x.setAttribute("aria-pressed",x===b));
+  renderDrugmaps(); });
+document.getElementById("segPocket").addEventListener("click",e=>{ const b=e.target.closest("button"); if(!b)return;
+  POCKETMODE=b.dataset.m; document.querySelectorAll("#segPocket button").forEach(x=>x.setAttribute("aria-pressed",x===b));
+  renderPockets(); });
+
+let rz; window.addEventListener("resize",()=>{ clearTimeout(rz); rz=setTimeout(renderData,150); });
+renderThesis(); renderAll();
+</script>
