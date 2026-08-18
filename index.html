@@ -248,7 +248,7 @@
 
   <!-- A: occupancy -->
   <section class="panel">
-    <div class="phead"><h2>1 · Conformational balance</h2><span class="tag">task T1 · overview</span></div>
+    <div class="phead"><h2>1 · Conformational balance</h2><span class="tag">the census</span></div>
     <p class="pdesc">The share of all simulated time each system spends in each Markov state: its
       stationary distribution. A drug that stabilises or destabilises a conformation shows up as a shift in
       these bars. Whiskers are 95% bootstrap confidence intervals over trajectories. State numbers are matched
@@ -261,7 +261,7 @@
 
   <!-- B: temporal -->
   <section class="panel">
-    <div class="phead"><h2>2 · Sampling coverage over time</h2><span class="tag">task T1 · convergence check</span></div>
+    <div class="phead"><h2>2 · Sampling coverage over time</h2><span class="tag">is the sampling settled?</span></div>
     <p class="pdesc">A convergence and coverage diagnostic, not real-time kinetics. The horizontal axis is position
       within the short simulations (aligned by start time), the band is the fraction of trajectories in each state
       there, and the sparkline above is how many trajectories are still active. Where the band settles and coverage
@@ -272,7 +272,7 @@
 
   <!-- C: transitions -->
   <section class="panel">
-    <div class="phead"><h2>3 · Transition structure</h2><span class="tag">task T2 · comparison</span></div>
+    <div class="phead"><h2>3 · Transition structure</h2><span class="tag">does it move?</span></div>
     <p class="pdesc">Probability of moving from the row state to the column state over a 40-frame lag. These
       states are <b>highly metastable</b>: the dashed <b>diagonal</b> (staying put) is ~97 to 100%, so the
       peptide rarely switches inside one short simulation, which is exactly why adaptive sampling has to
@@ -299,7 +299,7 @@
 
   <!-- D: genealogy -->
   <section class="panel">
-    <div class="phead"><h2>4 · Adaptive-sampling genealogy</h2><span class="tag">novel · the &ldquo;adaptive&rdquo; view</span></div>
+    <div class="phead"><h2>4 · Adaptive-sampling genealogy</h2><span class="tag">novel · where the data came from</span></div>
     <p class="pdesc">Adaptive sampling spawns each new simulation from a promising frame of an earlier one.
       Each dot is a simulation, placed by the epoch (round) it was launched in and coloured by the state it
       spends most time in; lines connect a simulation to its seed. This exposes <em>where</em> the sampling
@@ -309,7 +309,7 @@
 
   <!-- E: strips -->
   <section class="panel">
-    <div class="phead"><h2>5 · Ensemble strip matrix</h2><span class="tag">task T1 · every trajectory</span></div>
+    <div class="phead"><h2>5 · Ensemble strip matrix</h2><span class="tag">every trajectory</span></div>
     <p class="pdesc">One row per simulation, coloured frame-by-frame by its assigned state. This is the whole
       ensemble at once, the raw material behind every chart above, revealing when states appear,
       how persistent they are, and how coverage builds up over time.</p>
@@ -336,7 +336,7 @@
 
   <!-- 6: contact maps -->
   <section class="panel">
-    <div class="phead"><h2>6 · State fingerprints</h2><span class="tag">task T3 · what defines a state</span></div>
+    <div class="phead"><h2>6 · State fingerprints</h2><span class="tag">what defines a state</span></div>
     <p class="pdesc">Each Markov state is <em>defined</em> by which residues touch which, shown here as a
       42&times;42 residue contact-frequency map (darker = the two residues are in contact more often).
       Switch to <b>enrichment</b> to subtract the ensemble average, isolating the contacts that make each
@@ -354,7 +354,7 @@
 
   <!-- 7: drug binding -->
   <section class="panel">
-    <div class="phead"><h2>7 · Where the drug binds</h2><span class="tag">novel · T3 · residue interactions</span></div>
+    <div class="phead"><h2>7 · Where the drug binds</h2><span class="tag">novel · residue interactions</span></div>
     <p class="pdesc">How often each amino acid along the Aβ42 sequence contacts a drug molecule, per Markov state.
       Because the box holds 100 ligand copies, some contact happens by chance; <b>specific binding</b> subtracts
       that background (a contact map built from time-decorrelated frames), leaving only engagement above chance.
@@ -379,7 +379,7 @@
 
   <!-- 8: binding pocket -->
   <section class="panel">
-    <div class="phead"><h2>8 · The binding pocket</h2><span class="tag">novel · T3 · the drug in place</span></div>
+    <div class="phead"><h2>8 · The binding pocket</h2><span class="tag">novel · the drug in place</span></div>
     <p class="pdesc">The trajectories carry all-atom coordinates for the ligand as well as the peptide, so the
       binding site can be shown directly rather than inferred. For each state we take the frame in which the
       nearest of the 100 ligand copies makes the most residue contacts, and draw that pose: the C&alpha;
@@ -401,7 +401,7 @@
 
   <!-- 9: 3D backbone -->
   <section class="panel">
-    <div class="phead"><h2>9 · Representative shapes</h2><span class="tag">task T3 · abstract → spatial</span></div>
+    <div class="phead"><h2>9 · Representative shapes</h2><span class="tag">from label to shape</span></div>
     <p class="pdesc">Each state is a disordered <em>ensemble</em>, not one fold, so several superposed C&alpha;
       backbones are overlaid (N-terminus blue to C-terminus amber); the more they diverge, the more disordered
       the state. Drag any structure to rotate them together. Red beads mark the top drug-contact residues, and
@@ -411,7 +411,7 @@
 
   <!-- 10: conformational landscape -->
   <section class="panel">
-    <div class="phead"><h2>10 · Conformational landscape</h2><span class="tag">novel · T3 · where the drug pushes</span></div>
+    <div class="phead"><h2>10 · Conformational landscape</h2><span class="tag">novel · where the drug pushes</span></div>
     <p class="pdesc">Every frame placed by compactness (radius of gyration, x) and aggregation-prone
       &beta;-content (fraction of residues in &beta;-strand, y), as a free-energy map (darker = more populated =
       lower energy). Rings mark each Markov state&rsquo;s centre. Comparing the three maps shows, in one view,
@@ -425,7 +425,7 @@
 
   <!-- 11: secondary structure -->
   <section class="panel">
-    <div class="phead"><h2>11 · &beta;-strand propensity</h2><span class="tag">task T3 · aggregation readout</span></div>
+    <div class="phead"><h2>11 · &beta;-strand propensity</h2><span class="tag">aggregation readout</span></div>
     <p class="pdesc">The fraction of frames each residue sits in a &beta;-strand, averaged over the ensemble
       (population-weighted across states), for all three systems. &beta;-structure in the <b>CHC (17-21)</b> and
       <b>C-terminus (30-42)</b> is what drives Aβ42 aggregation, so comparing the three areas is the most direct
